@@ -540,10 +540,12 @@
           url: w => `https://glosbe.com/ca/en/${enc(w)}` },
         { name: 'Glosbe EN→CA', icon: '🔁', desc: 'English to Catalan',
           url: w => `https://glosbe.com/en/ca/${enc(w)}` },
-        { name: 'WordReference', icon: '📝', desc: 'CA ↔ EN translations',
-          url: w => `https://www.wordreference.com/caen/${encodeURIComponent(w)}` },
-        { name: 'Linguee', icon: '📋', desc: 'Contextual translations',
-          url: w => `https://www.linguee.com/english-catalan/search?query=${encodeURIComponent(w)}` },
+        { name: 'Cambridge CA→EN', icon: '📘', desc: 'Cambridge Dictionary',
+          url: w => `https://dictionary.cambridge.org/dictionary/catalan-english/${enc(w)}` },
+        { name: 'Cambridge EN→CA', icon: '📙', desc: 'Cambridge Dictionary',
+          url: w => `https://dictionary.cambridge.org/dictionary/english-catalan/${enc(w)}` },
+        { name: 'Wiktionary', icon: '📖', desc: 'Multilingual definitions',
+          url: w => `https://en.wiktionary.org/wiki/${enc(w)}` },
         { name: 'Google Translate', icon: '🌐', desc: 'Auto-detect language',
           url: w => `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(w)}` },
         { name: 'DeepL', icon: '🤖', desc: 'AI-powered translation',
@@ -669,6 +671,63 @@
         } catch {
           container.innerHTML = '<div class="api-card"><div class="api-empty">No s\'ha trobat cap definició en línia. Proveu els diccionaris de sota.</div></div>';
         }
+      } else if (mode === 'caen') {
+        container.innerHTML = '<div class="api-card"><div class="api-loading"><div class="spinner"></div>Looking up translations…</div></div>';
+        const results = [];
+        const fetches = [
+          fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
+            .then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=ca|en`)
+            .then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|ca`)
+            .then(r => r.ok ? r.json() : null).catch(() => null),
+        ];
+        const [enData, caEnData, enCaData] = await Promise.all(fetches);
+        let html = '';
+
+        // MyMemory CA→EN
+        if (caEnData?.responseData?.translatedText && caEnData.responseStatus === 200) {
+          const main = caEnData.responseData.translatedText;
+          html += `<div class="api-card">`;
+          html += `<div class="api-card-header"><span class="api-word">${escHtml(word)}</span>`;
+          html += `<span class="api-phonetic">Català → English</span></div>`;
+          html += `<div class="api-def">${escHtml(main)}</div>`;
+          const alts = (caEnData.matches || []).filter(m => m.translation && m.translation.toLowerCase() !== main.toLowerCase()).slice(0, 4);
+          if (alts.length) {
+            html += `<div class="api-synonyms" style="margin-top:0.5rem">Other translations: ${alts.map(m => `<span onclick="searchWord('${escAttr(m.translation)}')">${escHtml(m.translation)}</span>`).join(', ')}</div>`;
+          }
+          html += `</div>`;
+        }
+
+        // MyMemory EN→CA
+        if (enCaData?.responseData?.translatedText && enCaData.responseStatus === 200) {
+          const main = enCaData.responseData.translatedText;
+          html += `<div class="api-card">`;
+          html += `<div class="api-card-header"><span class="api-word">${escHtml(word)}</span>`;
+          html += `<span class="api-phonetic">English → Català</span></div>`;
+          html += `<div class="api-def">${escHtml(main)}</div>`;
+          const alts = (enCaData.matches || []).filter(m => m.translation && m.translation.toLowerCase() !== main.toLowerCase()).slice(0, 4);
+          if (alts.length) {
+            html += `<div class="api-synonyms" style="margin-top:0.5rem">Altres traduccions: ${alts.map(m => `<span onclick="searchWord('${escAttr(m.translation)}')">${escHtml(m.translation)}</span>`).join(', ')}</div>`;
+          }
+          html += `</div>`;
+        }
+
+        // English definition if available
+        if (enData && enData[0]) {
+          html += `<div class="api-card">`;
+          html += `<div class="api-card-header"><span class="api-word">${escHtml(enData[0].word)}</span>`;
+          html += `<span class="api-phonetic">${escHtml(enData[0].phonetic || '')} (English)</span></div>`;
+          for (const meaning of (enData[0].meanings || []).slice(0, 2)) {
+            html += `<div class="api-pos">${escHtml(meaning.partOfSpeech)}</div>`;
+            for (const def of (meaning.definitions || []).slice(0, 2)) {
+              html += `<div class="api-def">${escHtml(def.definition)}</div>`;
+            }
+          }
+          html += `</div>`;
+        }
+
+        container.innerHTML = html || '<div class="api-card"><div class="api-empty">No inline translations found. Try the dictionaries below.</div></div>';
       } else {
         container.innerHTML = '';
       }
