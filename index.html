@@ -220,31 +220,127 @@
 
     body.has-results .results-section { display: block; }
 
-    /* ── API Results ── */
+    /* ── Results ── */
+    .hero-note {
+      margin-top: 1rem;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      max-width: 620px;
+      text-align: center;
+    }
+
+    body.has-results .hero-note {
+      display: none;
+    }
+
+    .results-stack {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .results-summary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .summary-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .summary-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.15rem;
+    }
+
+    .summary-badge {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .section-block {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .section-copy {
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.9rem;
+    }
+
     .api-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
+      padding: 1.2rem;
       box-shadow: var(--shadow);
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
     }
 
     .api-card-header {
       display: flex;
-      align-items: baseline;
+      align-items: flex-start;
+      justify-content: space-between;
       gap: 1rem;
-      margin-bottom: 1rem;
+    }
+
+    .api-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .api-card-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.75rem;
+      background: var(--primary-light);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
     }
 
     .api-word {
-      font-size: 1.5rem;
+      font-size: 1.05rem;
       font-weight: 700;
     }
 
     .api-phonetic {
       color: var(--text-secondary);
-      font-size: 0.95rem;
+      font-size: 0.82rem;
+      margin-top: 0.12rem;
     }
 
     .api-phonetic-btn {
@@ -260,6 +356,27 @@
     }
 
     .api-phonetic-btn:hover { opacity: 1; }
+
+    .status-pill {
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.74rem;
+      white-space: nowrap;
+    }
+
+    .status-pill.live {
+      border-color: rgba(16, 185, 129, 0.25);
+      color: #059669;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .status-pill.link {
+      border-color: rgba(79, 70, 229, 0.25);
+      color: var(--primary);
+      background: rgba(79, 70, 229, 0.08);
+    }
 
     .api-pos {
       font-size: 0.8rem;
@@ -277,8 +394,8 @@
     .api-def {
       padding: 0.3rem 0 0.3rem 1rem;
       border-left: 2px solid var(--border);
-      margin: 0.4rem 0;
-      font-size: 0.95rem;
+      margin: 0.2rem 0;
+      font-size: 0.92rem;
     }
 
     .api-example {
@@ -301,9 +418,44 @@
 
     .api-synonyms span:hover { text-decoration: underline; }
 
+    .api-list {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .api-meta {
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+    }
+
+    .api-actions {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .api-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.84rem;
+    }
+
+    .api-link:hover {
+      text-decoration: underline;
+    }
+
+    .api-note {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
     .api-loading, .api-error, .api-empty {
       text-align: center;
-      padding: 2rem;
+      padding: 1.5rem 0.75rem;
       color: var(--text-secondary);
     }
 
@@ -323,12 +475,12 @@
       margin: 0 auto 0.75rem;
     }
 
-    /* ── Open All Bar ── */
+    /* ── Reference Links ── */
     .actions-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1rem;
+      gap: 1rem;
     }
 
     .section-label {
@@ -464,6 +616,10 @@
       body.has-results .search-row { max-width: 100%; }
       body.has-results .mode-tabs { margin-left: 0; margin-top: 0.5rem; width: 100%; justify-content: center; }
       .results-section { padding: 1rem; }
+      .results-summary { align-items: flex-start; flex-direction: column; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .actions-bar { align-items: flex-start; flex-direction: column; }
+      .source-grid { grid-template-columns: 1fr; }
       .dict-grid { grid-template-columns: 1fr; }
       #searchBtn { padding: 0.75rem 1rem; }
       .mode-tab { padding: 0.35rem 0.65rem; font-size: 0.8rem; }
@@ -485,6 +641,7 @@
           <button class="mode-tab" data-mode="ca">Català</button>
           <button class="mode-tab" data-mode="caen">CA ↔ EN</button>
         </div>
+        <div class="hero-note">Public dictionary and translation sources are aggregated here in parallel. Commercial dictionaries without browser APIs stay available as direct links.</div>
         <div class="kbd-hint">
           Press <kbd>Enter</kbd> to search · <kbd>/</kbd> to focus
         </div>
@@ -492,65 +649,94 @@
     </div>
 
     <div class="results-section">
-      <div id="apiResults"></div>
-      <div class="actions-bar">
-        <span class="section-label" id="gridLabel">Dictionaries</span>
-        <button id="openAllBtn">Open All ↗</button>
+      <div class="results-summary">
+        <div>
+          <div class="summary-title" id="summaryTitle">Results</div>
+          <div class="summary-subtitle" id="summarySubtitle">Multiple sources, one search.</div>
+        </div>
+        <div class="summary-badge" id="summaryBadge">0 sources</div>
       </div>
-      <div class="dict-grid" id="dictGrid"></div>
+      <div class="results-stack">
+        <section class="section-block">
+          <div class="section-head">
+            <div>
+              <div class="section-label" id="liveLabel">Aggregated Results</div>
+              <div class="section-copy" id="liveCopy">Live source cards render inside the app.</div>
+            </div>
+          </div>
+          <div class="source-grid" id="apiResults"></div>
+        </section>
+
+        <section class="section-block">
+          <div class="actions-bar">
+            <div>
+              <div class="section-label" id="gridLabel">Reference Links</div>
+              <div class="section-copy" id="gridCopy">Open the original dictionaries for full entries.</div>
+            </div>
+            <button id="openAllBtn">Open All ↗</button>
+          </div>
+          <div class="dict-grid" id="dictGrid"></div>
+        </section>
+      </div>
       <div class="footer">Vocab — No ads, no tracking. Just dictionaries.</div>
     </div>
   </div>
 
   <script>
-    /* ── Dictionary sources ── */
-    const DICTS = {
+    const EXTERNAL_SOURCES = {
       en: [
-        { name: 'Cambridge', icon: '📘', desc: 'Advanced Learner\'s',
-          url: w => `https://dictionary.cambridge.org/dictionary/english/${enc(w)}` },
-        { name: 'Merriam-Webster', icon: '📕', desc: 'American English',
-          url: w => `https://www.merriam-webster.com/dictionary/${enc(w)}` },
-        { name: 'Longman', icon: '📗', desc: 'Contemporary English',
-          url: w => `https://www.ldoceonline.com/dictionary/${enc(w)}` },
-        { name: 'Collins', icon: '📙', desc: 'English Dictionary',
-          url: w => `https://www.collinsdictionary.com/dictionary/english/${enc(w)}` },
-        { name: 'Oxford Learner\'s', icon: '📓', desc: 'Learner\'s Dictionary',
-          url: w => `https://www.oxfordlearnersdictionaries.com/definition/english/${enc(w)}` },
-        { name: 'Wiktionary', icon: '📖', desc: 'Free & multilingual',
-          url: w => `https://en.wiktionary.org/wiki/${enc(w)}` },
-        { name: 'Thesaurus.com', icon: '🔠', desc: 'Synonyms & antonyms',
-          url: w => `https://www.thesaurus.com/browse/${enc(w)}` },
+        { name: 'Cambridge', icon: '📘', desc: 'Advanced Learner\'s', url: w => `https://dictionary.cambridge.org/dictionary/english/${enc(w)}` },
+        { name: 'Merriam-Webster', icon: '📕', desc: 'American English', url: w => `https://www.merriam-webster.com/dictionary/${enc(w)}` },
+        { name: 'Longman', icon: '📗', desc: 'Contemporary English', url: w => `https://www.ldoceonline.com/dictionary/${enc(w)}` },
+        { name: 'Collins', icon: '📙', desc: 'English Dictionary', url: w => `https://www.collinsdictionary.com/dictionary/english/${enc(w)}` },
+        { name: 'Oxford Learner\'s', icon: '📓', desc: 'Learner\'s Dictionary', url: w => `https://www.oxfordlearnersdictionaries.com/definition/english/${enc(w)}` },
+        { name: 'Wiktionary', icon: '📖', desc: 'Free & multilingual', url: w => `https://en.wiktionary.org/wiki/${enc(w)}` },
+        { name: 'Thesaurus.com', icon: '🔠', desc: 'Synonyms & antonyms', url: w => `https://www.thesaurus.com/browse/${enc(w)}` },
       ],
       ca: [
-        { name: 'DIEC2', icon: '📘', desc: 'Diccionari normatiu (IEC)',
-          url: w => `https://dlc.iec.cat/Results?DecEntryWord=${encodeURIComponent(w)}&CurrentOper=cerca&OperEntry=0` },
-        { name: 'DCVB', icon: '📕', desc: 'Alcover-Moll',
-          url: w => `https://dcvb.iec.cat/results.asp?Word=${encodeURIComponent(w)}` },
-        { name: 'Viccionari', icon: '📖', desc: 'Wiktionary en català',
-          url: w => `https://ca.wiktionary.org/wiki/${enc(w)}` },
-        { name: 'Optimot', icon: '🗣️', desc: 'Consultes lingüístiques',
-          url: w => `https://aplicacions.llengua.gencat.cat/llc/AppJava/index.html?input_cercat=${encodeURIComponent(w)}&action=Principal&method=detall` },
-        { name: 'Enciclopèdia.cat', icon: '📚', desc: 'Gran Enciclopèdia Catalana',
-          url: w => `https://www.enciclopedia.cat/search/site/${encodeURIComponent(w)}` },
-        { name: 'Softcatalà', icon: '🔤', desc: 'Diccionari de sinònims',
-          url: w => `https://www.softcatala.org/diccionari-de-sinonims/paraula/${enc(w)}/` },
+        { name: 'DIEC2', icon: '📘', desc: 'Diccionari normatiu (IEC)', url: w => `https://dlc.iec.cat/Results?DecEntryWord=${encodeURIComponent(w)}&CurrentOper=cerca&OperEntry=0` },
+        { name: 'DCVB', icon: '📕', desc: 'Alcover-Moll', url: w => `https://dcvb.iec.cat/results.asp?Word=${encodeURIComponent(w)}` },
+        { name: 'Viccionari', icon: '📖', desc: 'Wiktionary en català', url: w => `https://ca.wiktionary.org/wiki/${enc(w)}` },
+        { name: 'Optimot', icon: '🗣️', desc: 'Consultes lingüístiques', url: w => `https://aplicacions.llengua.gencat.cat/llc/AppJava/index.html?input_cercat=${encodeURIComponent(w)}&action=Principal&method=detall` },
+        { name: 'Enciclopèdia.cat', icon: '📚', desc: 'Gran Enciclopèdia Catalana', url: w => `https://www.enciclopedia.cat/search/site/${encodeURIComponent(w)}` },
+        { name: 'Softcatalà', icon: '🔤', desc: 'Diccionari de sinònims', url: w => `https://www.softcatala.org/diccionari-de-sinonims/paraula/${enc(w)}/` },
       ],
       caen: [
-        { name: 'Glosbe CA→EN', icon: '🔄', desc: 'Catalan to English',
-          url: w => `https://glosbe.com/ca/en/${enc(w)}` },
-        { name: 'Glosbe EN→CA', icon: '🔁', desc: 'English to Catalan',
-          url: w => `https://glosbe.com/en/ca/${enc(w)}` },
-        { name: 'Cambridge CA→EN', icon: '📘', desc: 'Cambridge Dictionary',
-          url: w => `https://dictionary.cambridge.org/dictionary/catalan-english/${enc(w)}` },
-        { name: 'Cambridge EN→CA', icon: '📙', desc: 'Cambridge Dictionary',
-          url: w => `https://dictionary.cambridge.org/dictionary/english-catalan/${enc(w)}` },
-        { name: 'Wiktionary', icon: '📖', desc: 'Multilingual definitions',
-          url: w => `https://en.wiktionary.org/wiki/${enc(w)}` },
-        { name: 'Google Translate', icon: '🌐', desc: 'Auto-detect language',
-          url: w => `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(w)}` },
-        { name: 'DeepL', icon: '🤖', desc: 'AI-powered translation',
-          url: w => `https://www.deepl.com/translator#ca/en/${encodeURIComponent(w)}` },
+        { name: 'Glosbe CA→EN', icon: '🔄', desc: 'Catalan to English', url: w => `https://glosbe.com/ca/en/${enc(w)}` },
+        { name: 'Glosbe EN→CA', icon: '🔁', desc: 'English to Catalan', url: w => `https://glosbe.com/en/ca/${enc(w)}` },
+        { name: 'Cambridge CA→EN', icon: '📘', desc: 'Cambridge Dictionary', url: w => `https://dictionary.cambridge.org/dictionary/catalan-english/${enc(w)}` },
+        { name: 'Cambridge EN→CA', icon: '📙', desc: 'Cambridge Dictionary', url: w => `https://dictionary.cambridge.org/dictionary/english-catalan/${enc(w)}` },
+        { name: 'Wiktionary', icon: '📖', desc: 'Multilingual definitions', url: w => `https://en.wiktionary.org/wiki/${enc(w)}` },
+        { name: 'Google Translate', icon: '🌐', desc: 'Auto-detect language', url: w => `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(w)}` },
+        { name: 'DeepL', icon: '🤖', desc: 'AI-powered translation', url: w => `https://www.deepl.com/translator#ca/en/${encodeURIComponent(w)}` },
       ]
+    };
+
+    const MODE_COPY = {
+      en: {
+        title: 'English lookup',
+        subtitle: 'Definitions, pronunciation, synonyms, related words.',
+        liveLabel: 'Aggregated English Results',
+        liveCopy: 'Public APIs are queried in parallel and rendered as separate source cards.',
+        linkLabel: 'Reference Dictionaries',
+        linkCopy: 'Commercial dictionaries are linked directly when browser-side aggregation is not available.'
+      },
+      ca: {
+        title: 'Catalan lookup',
+        subtitle: 'Catalan definitions first, plus translation-oriented support cards.',
+        liveLabel: 'Aggregated Catalan Results',
+        liveCopy: 'Catalan-friendly public sources are rendered here inside the app.',
+        linkLabel: 'Diccionaris de referència',
+        linkCopy: 'Per a les entrades completes, obriu les fonts originals.'
+      },
+      caen: {
+        title: 'Català ↔ English',
+        subtitle: 'Bidirectional translation cards plus lexical context.',
+        liveLabel: 'Aggregated Translation Results',
+        liveCopy: 'Translation and dictionary sources load side by side inside the app.',
+        linkLabel: 'External Translation Tools',
+        linkCopy: 'Use the original sites when you need the full source interface.'
+      }
     };
 
     /* ── State ── */
@@ -607,6 +793,9 @@
       $('#searchInput').value = '';
       $('#apiResults').innerHTML = '';
       $('#dictGrid').innerHTML = '';
+      $('#summaryTitle').textContent = 'Results';
+      $('#summarySubtitle').textContent = 'Multiple sources, one search.';
+      $('#summaryBadge').textContent = '0 sources';
       history.replaceState(null, '', location.pathname);
       $('#searchInput').focus();
     }
@@ -619,15 +808,26 @@
       document.body.className = 'has-results';
       location.hash = `${mode}|${encodeURIComponent(word)}`;
 
+      updateModeCopy(word);
       renderGrid(word);
-      fetchApiResults(word);
+      renderAggregatedResults(word);
     }
 
-    /* ── Grid ── */
+    function updateModeCopy(word) {
+      const copy = MODE_COPY[mode];
+      const inlineCount = getInlineSources(word).length;
+      const refCount = (EXTERNAL_SOURCES[mode] || []).length;
+      $('#summaryTitle').textContent = `${copy.title} for “${word}”`;
+      $('#summarySubtitle').textContent = copy.subtitle;
+      $('#summaryBadge').textContent = `${inlineCount} live · ${refCount} references`;
+      $('#liveLabel').textContent = copy.liveLabel;
+      $('#liveCopy').textContent = copy.liveCopy;
+      $('#gridLabel').textContent = copy.linkLabel;
+      $('#gridCopy').textContent = copy.linkCopy;
+    }
+
     function renderGrid(word) {
-      const dicts = DICTS[mode] || [];
-      const labels = { en: 'English Dictionaries', ca: 'Diccionaris Catalans', caen: 'Translation Tools' };
-      $('#gridLabel').textContent = labels[mode] || 'Dictionaries';
+      const dicts = EXTERNAL_SOURCES[mode] || [];
 
       $('#dictGrid').innerHTML = dicts.map(d => `
         <a class="dict-card" href="${escAttr(d.url(word))}" target="_blank" rel="noopener noreferrer" title="Open ${escHtml(d.name)}">
@@ -641,156 +841,261 @@
       `).join('');
     }
 
-    /* ── Open All ── */
     function openAll() {
-      const dicts = DICTS[mode] || [];
+      const dicts = EXTERNAL_SOURCES[mode] || [];
       dicts.forEach(d => window.open(d.url(currentWord), '_blank', 'noopener'));
     }
 
-    /* ── API Results (English) ── */
-    async function fetchApiResults(word) {
-      const container = $('#apiResults');
+    function getInlineSources(word) {
+      const normalized = word.trim();
+      const sources = [];
 
       if (mode === 'en') {
-        container.innerHTML = '<div class="api-card"><div class="api-loading"><div class="spinner"></div>Looking up definition…</div></div>';
+        sources.push(buildDictionaryApiSource(normalized));
+        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'Wiktionary'));
+        sources.push(buildDatamuseSource(normalized));
+      }
+
+      if (mode === 'ca') {
+        sources.push(buildWiktionarySource(normalized, 'Catalan', 'ca', 'Viccionari'));
+        sources.push(buildMyMemorySource(normalized, 'ca|en', 'Quick Translation', 'Català → English'));
+        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'English context'));
+      }
+
+      if (mode === 'caen') {
+        sources.push(buildMyMemorySource(normalized, 'ca|en', 'Català → English', 'Machine-assisted translation'));
+        sources.push(buildMyMemorySource(normalized, 'en|ca', 'English → Català', 'Machine-assisted translation'));
+        sources.push(buildWiktionarySource(normalized, 'Catalan', 'ca', 'Catalan lexical note'));
+        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'English lexical note'));
+        sources.push(buildDictionaryApiSource(normalized));
+      }
+
+      return sources;
+    }
+
+    async function renderAggregatedResults(word) {
+      const container = $('#apiResults');
+      const sources = getInlineSources(word);
+
+      container.innerHTML = sources.map(source => renderLoadingCard(source)).join('');
+
+      const cards = [...container.querySelectorAll('.api-card[data-source-id]')];
+      await Promise.allSettled(sources.map(async (source, index) => {
+        const card = cards[index];
         try {
-          const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-          if (!res.ok) throw new Error('not found');
-          const data = await res.json();
-          renderApiCard(data, container);
+          const result = await source.load();
+          card.outerHTML = renderSourceCard(source, result, word);
         } catch {
-          container.innerHTML = '<div class="api-card"><div class="api-empty">No inline definition found. Try the dictionaries below.</div></div>';
+          card.outerHTML = renderSourceCard(source, { state: 'empty' }, word);
         }
-      } else if (mode === 'ca') {
-        container.innerHTML = '<div class="api-card"><div class="api-loading"><div class="spinner"></div>Cercant definició…</div></div>';
-        try {
-          const res = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word)}`);
-          if (!res.ok) throw new Error('not found');
-          const data = await res.json();
-          renderWiktionaryCard(data, word, container);
-        } catch {
-          container.innerHTML = '<div class="api-card"><div class="api-empty">No s\'ha trobat cap definició en línia. Proveu els diccionaris de sota.</div></div>';
-        }
-      } else if (mode === 'caen') {
-        container.innerHTML = '<div class="api-card"><div class="api-loading"><div class="spinner"></div>Looking up translations…</div></div>';
-        const results = [];
-        const fetches = [
-          fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`)
-            .then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=ca|en`)
-            .then(r => r.ok ? r.json() : null).catch(() => null),
-          fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|ca`)
-            .then(r => r.ok ? r.json() : null).catch(() => null),
-        ];
-        const [enData, caEnData, enCaData] = await Promise.all(fetches);
-        let html = '';
+      }));
+    }
 
-        // MyMemory CA→EN
-        if (caEnData?.responseData?.translatedText && caEnData.responseStatus === 200) {
-          const main = caEnData.responseData.translatedText;
-          html += `<div class="api-card">`;
-          html += `<div class="api-card-header"><span class="api-word">${escHtml(word)}</span>`;
-          html += `<span class="api-phonetic">Català → English</span></div>`;
-          html += `<div class="api-def">${escHtml(main)}</div>`;
-          const alts = (caEnData.matches || []).filter(m => m.translation && m.translation.toLowerCase() !== main.toLowerCase()).slice(0, 4);
-          if (alts.length) {
-            html += `<div class="api-synonyms" style="margin-top:0.5rem">Other translations: ${alts.map(m => `<span onclick="searchWord('${escAttr(m.translation)}')">${escHtml(m.translation)}</span>`).join(', ')}</div>`;
+    function buildDictionaryApiSource(word) {
+      return {
+        id: `dictapi-${word}`,
+        name: 'DictionaryAPI',
+        icon: '📘',
+        url: `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+        load: async () => {
+          const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+          if (!response.ok) {
+            return { state: 'empty', note: 'No English entry from DictionaryAPI.' };
           }
-          html += `</div>`;
-        }
-
-        // MyMemory EN→CA
-        if (enCaData?.responseData?.translatedText && enCaData.responseStatus === 200) {
-          const main = enCaData.responseData.translatedText;
-          html += `<div class="api-card">`;
-          html += `<div class="api-card-header"><span class="api-word">${escHtml(word)}</span>`;
-          html += `<span class="api-phonetic">English → Català</span></div>`;
-          html += `<div class="api-def">${escHtml(main)}</div>`;
-          const alts = (enCaData.matches || []).filter(m => m.translation && m.translation.toLowerCase() !== main.toLowerCase()).slice(0, 4);
-          if (alts.length) {
-            html += `<div class="api-synonyms" style="margin-top:0.5rem">Altres traduccions: ${alts.map(m => `<span onclick="searchWord('${escAttr(m.translation)}')">${escHtml(m.translation)}</span>`).join(', ')}</div>`;
+          const data = await response.json();
+          const entry = data[0];
+          if (!entry) {
+            return { state: 'empty', note: 'No English entry from DictionaryAPI.' };
           }
-          html += `</div>`;
-        }
-
-        // English definition if available
-        if (enData && enData[0]) {
-          html += `<div class="api-card">`;
-          html += `<div class="api-card-header"><span class="api-word">${escHtml(enData[0].word)}</span>`;
-          html += `<span class="api-phonetic">${escHtml(enData[0].phonetic || '')} (English)</span></div>`;
-          for (const meaning of (enData[0].meanings || []).slice(0, 2)) {
-            html += `<div class="api-pos">${escHtml(meaning.partOfSpeech)}</div>`;
+          const items = [];
+          for (const meaning of (entry.meanings || []).slice(0, 3)) {
             for (const def of (meaning.definitions || []).slice(0, 2)) {
-              html += `<div class="api-def">${escHtml(def.definition)}</div>`;
+              items.push({ label: meaning.partOfSpeech, text: def.definition, example: def.example || '' });
             }
           }
-          html += `</div>`;
+          return {
+            state: 'live',
+            heading: entry.word,
+            meta: entry.phonetic || entry.phonetics?.find(item => item.text)?.text || 'English definition',
+            items,
+            tags: (entry.meanings || []).flatMap(meaning => meaning.synonyms || []).slice(0, 6),
+            action: entry.phonetics?.find(item => item.audio)?.audio || ''
+          };
         }
-
-        container.innerHTML = html || '<div class="api-card"><div class="api-empty">No inline translations found. Try the dictionaries below.</div></div>';
-      } else {
-        container.innerHTML = '';
-      }
+      };
     }
 
-    function renderApiCard(data, container) {
-      const entry = data[0];
-      if (!entry) { container.innerHTML = ''; return; }
+    function buildDatamuseSource(word) {
+      return {
+        id: `datamuse-${word}`,
+        name: 'Datamuse',
+        icon: '🧠',
+        url: `https://www.datamuse.com/?ml=${encodeURIComponent(word)}`,
+        load: async () => {
+          const [meansLike, soundsLike, antonyms] = await Promise.all([
+            fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(word)}&max=6`).then(r => r.ok ? r.json() : []),
+            fetch(`https://api.datamuse.com/words?sl=${encodeURIComponent(word)}&max=6`).then(r => r.ok ? r.json() : []),
+            fetch(`https://api.datamuse.com/words?rel_ant=${encodeURIComponent(word)}&max=6`).then(r => r.ok ? r.json() : []),
+          ]);
 
-      const phonetic = entry.phonetic || (entry.phonetics && entry.phonetics.find(p => p.text)?.text) || '';
-      const audioUrl = entry.phonetics?.find(p => p.audio)?.audio || '';
+          const hasContent = meansLike.length || soundsLike.length || antonyms.length;
+          if (!hasContent) {
+            return { state: 'empty', note: 'No related English words from Datamuse.' };
+          }
 
-      let html = `<div class="api-card">
+          return {
+            state: 'live',
+            heading: word,
+            meta: 'Related English words',
+            groups: [
+              { label: 'Means like', words: meansLike.map(item => item.word) },
+              { label: 'Sounds like', words: soundsLike.map(item => item.word) },
+              { label: 'Antonyms', words: antonyms.map(item => item.word) },
+            ].filter(group => group.words.length)
+          };
+        }
+      };
+    }
+
+    function buildWiktionarySource(word, languageKey, shortKey, name) {
+      return {
+        id: `wiktionary-${shortKey}-${word}`,
+        name,
+        icon: shortKey === 'ca' ? '📖' : '📚',
+        url: `https://en.wiktionary.org/wiki/${enc(word)}`,
+        load: async () => {
+          const response = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word)}`);
+          if (!response.ok) {
+            return { state: 'empty', note: `No ${languageKey.toLowerCase()} entry from Wiktionary.` };
+          }
+          const data = await response.json();
+          const sections = data[shortKey] || data[languageKey];
+          if (!sections || !sections.length) {
+            return { state: 'empty', note: `No ${languageKey.toLowerCase()} entry from Wiktionary.` };
+          }
+          const items = [];
+          for (const section of sections.slice(0, 3)) {
+            for (const def of (section.definitions || []).slice(0, 2)) {
+              items.push({ label: section.partOfSpeech || languageKey, html: sanitizeHtml(def.definition) });
+            }
+          }
+          return {
+            state: 'live',
+            heading: word,
+            meta: `${languageKey} entry`,
+            items
+          };
+        }
+      };
+    }
+
+    function buildMyMemorySource(word, pair, name, meta) {
+      return {
+        id: `mymemory-${pair}-${word}`,
+        name,
+        icon: pair === 'ca|en' ? '🔄' : '🔁',
+        url: `https://mymemory.translated.net/?q=${encodeURIComponent(word)}&langpair=${pair}`,
+        load: async () => {
+          const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=${pair}`);
+          if (!response.ok) {
+            return { state: 'empty', note: 'Translation source unavailable.' };
+          }
+          const data = await response.json();
+          const main = data.responseData?.translatedText;
+          if (!main) {
+            return { state: 'empty', note: 'No translation candidates found.' };
+          }
+          const suggestions = uniqueItems((data.matches || []).map(item => item.translation).filter(Boolean)).slice(0, 6);
+          return {
+            state: 'live',
+            heading: word,
+            meta,
+            items: [{ label: 'Top result', text: main }],
+            tags: suggestions
+          };
+        }
+      };
+    }
+
+    function renderLoadingCard(source) {
+      return `<article class="api-card" data-source-id="${escAttr(source.id)}">
         <div class="api-card-header">
-          <span class="api-word">${escHtml(entry.word)}</span>
-          <span class="api-phonetic">${escHtml(phonetic)}`;
-      if (audioUrl) {
-        html += ` <button class="api-phonetic-btn" onclick="playAudio('${escAttr(audioUrl)}')" title="Listen">🔊</button>`;
-      }
-      html += `</span></div>`;
-
-      for (const meaning of entry.meanings || []) {
-        html += `<div class="api-pos">${escHtml(meaning.partOfSpeech)}</div>`;
-        for (const def of (meaning.definitions || []).slice(0, 4)) {
-          html += `<div class="api-def">${escHtml(def.definition)}`;
-          if (def.example) html += `<div class="api-example">"${escHtml(def.example)}"</div>`;
-          html += `</div>`;
-        }
-        const syns = meaning.synonyms?.slice(0, 6) || [];
-        if (syns.length) {
-          html += `<div class="api-synonyms">Synonyms: ${syns.map(s =>
-            `<span onclick="searchWord('${escAttr(s)}')">${escHtml(s)}</span>`).join(', ')}</div>`;
-        }
-      }
-
-      html += `</div>`;
-      container.innerHTML = html;
+          <div class="api-card-title">
+            <span class="api-card-icon">${source.icon}</span>
+            <div>
+              <div class="api-word">${escHtml(source.name)}</div>
+              <div class="api-phonetic">Loading source…</div>
+            </div>
+          </div>
+          <span class="status-pill">Loading</span>
+        </div>
+        <div class="api-loading"><div class="spinner"></div>Fetching data…</div>
+      </article>`;
     }
 
-    function renderWiktionaryCard(data, word, container) {
-      const caData = data.ca || data.Catalan;
-      if (!caData || !caData.length) {
-        container.innerHTML = '<div class="api-card"><div class="api-empty">No s\'ha trobat cap definició catalana al Viccionari. Proveu els diccionaris de sota.</div></div>';
-        return;
+    function renderSourceCard(source, result, word) {
+      const pillClass = result.state === 'live' ? 'status-pill live' : 'status-pill';
+      const pillText = result.state === 'live' ? 'Live data' : 'No result';
+      let body = '';
+
+      if (result.state === 'live' && result.items?.length) {
+        body += '<div class="api-list">';
+        for (const item of result.items) {
+          body += `<div>`;
+          if (item.label) {
+            body += `<div class="api-pos">${escHtml(item.label)}</div>`;
+          }
+          if (item.html) {
+            body += `<div class="api-def">${item.html}</div>`;
+          } else {
+            body += `<div class="api-def">${escHtml(item.text || '')}`;
+            if (item.example) {
+              body += `<div class="api-example">${escHtml(item.example)}</div>`;
+            }
+            body += `</div>`;
+          }
+          body += `</div>`;
+        }
+        body += '</div>';
       }
 
-      let html = `<div class="api-card">
-        <div class="api-card-header"><span class="api-word">${escHtml(word)}</span>
-        <span class="api-phonetic" style="opacity:0.6">via Wiktionary</span></div>`;
-
-      for (const section of caData) {
-        if (section.partOfSpeech) {
-          html += `<div class="api-pos">${escHtml(section.partOfSpeech)}</div>`;
-        }
-        for (const def of (section.definitions || []).slice(0, 5)) {
-          html += `<div class="api-def">${sanitizeHtml(def.definition)}</div>`;
+      if (result.state === 'live' && result.groups?.length) {
+        for (const group of result.groups) {
+          body += `<div><div class="api-pos">${escHtml(group.label)}</div><div class="api-synonyms">${group.words.map(item => `<span onclick="searchWord('${escAttr(item)}')">${escHtml(item)}</span>`).join(', ')}</div></div>`;
         }
       }
-      html += `</div>`;
-      container.innerHTML = html;
+
+      if (result.state === 'live' && result.tags?.length) {
+        body += `<div class="api-synonyms">${result.tags.map(item => `<span onclick="searchWord('${escAttr(item)}')">${escHtml(item)}</span>`).join(', ')}</div>`;
+      }
+
+      if (result.state !== 'live') {
+        body = `<div class="api-empty">${escHtml(result.note || 'No result for this source.')}</div>`;
+      }
+
+      const audioButton = result.action
+        ? `<button class="api-phonetic-btn" onclick="playAudio('${escAttr(result.action)}')" title="Listen">🔊</button>`
+        : '';
+
+      return `<article class="api-card">
+        <div class="api-card-header">
+          <div class="api-card-title">
+            <span class="api-card-icon">${source.icon}</span>
+            <div>
+              <div class="api-word">${escHtml(source.name)}</div>
+              <div class="api-phonetic">${escHtml(result.meta || result.heading || word)} ${audioButton}</div>
+            </div>
+          </div>
+          <span class="${pillClass}">${pillText}</span>
+        </div>
+        ${body}
+        <div class="api-actions">
+          <div class="api-note">${result.state === 'live' ? 'Rendered in-app from a public source.' : 'This source returned nothing for the current query.'}</div>
+          <a class="api-link" href="${escAttr(source.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>
+        </div>
+      </article>`;
     }
 
-    /* ── Utilities ── */
     function playAudio(url) {
       new Audio(url).play().catch(() => {});
     }
@@ -809,6 +1114,10 @@
 
     function escAttr(s) {
       return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function uniqueItems(items) {
+      return [...new Set(items.map(item => item.trim()).filter(Boolean))];
     }
 
     function sanitizeHtml(s) {
