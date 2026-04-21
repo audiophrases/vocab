@@ -698,13 +698,13 @@
         { name: 'DCVB', icon: '📕', desc: 'Alcover-Moll', url: w => `https://dcvb.iec.cat/results.asp?Word=${encodeURIComponent(w)}` },
         { name: 'Viccionari', icon: '📖', desc: 'Wiktionary en català', url: w => `https://ca.wiktionary.org/wiki/${enc(w)}` },
         { name: 'Optimot', icon: '🗣️', desc: 'Consultes lingüístiques', url: w => `https://aplicacions.llengua.gencat.cat/llc/AppJava/index.html?input_cercat=${encodeURIComponent(w)}&action=Principal&method=detall` },
-        { name: 'Enciclopèdia.cat', icon: '📚', desc: 'Gran Enciclopèdia Catalana', url: w => `https://www.enciclopedia.cat/search/site/${encodeURIComponent(w)}` },
+        { name: 'Enciclopèdia.cat', icon: '📚', desc: 'Gran Enciclopèdia Catalana', url: w => `https://www.enciclopedia.cat/cerca/gec?search_api_fulltext=${encodeURIComponent(w)}` },
         { name: 'Softcatalà', icon: '🔤', desc: 'Diccionari de sinònims', url: w => `https://www.softcatala.org/diccionari-de-sinonims/paraula/${enc(w)}/` },
       ],
       caen: [
         { name: 'Glosbe CA→EN', icon: '🔄', desc: 'Catalan to English', url: w => `https://glosbe.com/ca/en/${enc(w)}` },
         { name: 'Glosbe EN→CA', icon: '🔁', desc: 'English to Catalan', url: w => `https://glosbe.com/en/ca/${enc(w)}` },
-        { name: 'Cambridge CA→EN', icon: '📘', desc: 'Cambridge Dictionary', url: w => `https://dictionary.cambridge.org/dictionary/catalan-english/${enc(w)}` },
+        { name: 'Cambridge CA→EN', icon: '📘', desc: 'Cambridge search suggestions', url: w => `https://dictionary.cambridge.org/search/english/?q=${encodeURIComponent(w)}` },
         { name: 'Cambridge EN→CA', icon: '📙', desc: 'Cambridge Dictionary', url: w => `https://dictionary.cambridge.org/dictionary/english-catalan/${enc(w)}` },
         { name: 'Wiktionary', icon: '📖', desc: 'Multilingual definitions', url: w => `https://en.wiktionary.org/wiki/${enc(w)}` },
         { name: 'Google Translate', icon: '🌐', desc: 'Auto-detect language', url: w => `https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(w)}` },
@@ -849,6 +849,7 @@
     function getInlineSources(word) {
       const normalized = word.trim();
       const sources = [];
+      const englishBridgeLookup = () => getTranslationCandidates(normalized, 'ca|en');
 
       if (mode === 'en') {
         sources.push(buildDictionaryApiSource(normalized));
@@ -859,17 +860,18 @@
       if (mode === 'ca') {
         sources.push(buildWiktionarySource(normalized, 'Catalan', 'ca', 'Viccionari'));
         sources.push(buildMyMemorySource(normalized, 'ca|en', 'Quick Translation', 'Català → English'));
-        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'English context'));
+        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'English context', { resolveLookupTerms: englishBridgeLookup }));
       }
 
       if (mode === 'caen') {
         sources.push(buildMyMemorySource(normalized, 'ca|en', 'Català → English', 'Machine-assisted translation'));
         sources.push(buildMyMemorySource(normalized, 'en|ca', 'English → Català', 'Machine-assisted translation'));
         sources.push(buildWiktionarySource(normalized, 'Catalan', 'ca', 'Catalan lexical note'));
-        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'English lexical note'));
-        sources.push(buildDictionaryApiSource(normalized));
+        sources.push(buildWiktionarySource(normalized, 'English', 'en', 'English lexical note', { resolveLookupTerms: englishBridgeLookup }));
+        sources.push(buildDictionaryApiSource(normalized, { resolveLookupTerms: englishBridgeLookup }));
       }
 
+      sources.push(...getExternalMirrorSources(normalized, { englishBridgeLookup }));
       return sources;
     }
 
@@ -891,36 +893,78 @@
       }));
     }
 
-    function buildDictionaryApiSource(word) {
+    async function getTranslationCandidates(word, pair) {
+      try {
+        const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=${pair}`);
+        if (!response.ok) return [];
+        const data = await response.json();
+        const candidates = [];
+        if (data.responseData?.translatedText) {
+          candidates.push(...splitTranslationCandidates(data.responseData.translatedText));
+        }
+        for (const match of (data.matches || []).slice(0, 8)) {
+          if (match.translation) {
+            candidates.push(...splitTranslationCandidates(match.translation));
+          }
+        }
+        return uniqueItems(candidates).slice(0, 8);
+      } catch {
+        return [];
+      }
+    }
+
+    function splitTranslationCandidates(text) {
+      return (text || '')
+        .split(/[;,/|]|\s+·\s+|\s+→\s+/)
+        .map(item => item.replace(/^~/, '').replace(/[()[\]{}]/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter(item => item && !/^to\s+/i.test(item));
+    }
+
+    async function resolveLookupTerms(word, options = {}) {
+      const fallbackTerms = Array.isArray(options.lookupTerms) ? options.lookupTerms : [];
+      const dynamicTerms = options.resolveLookupTerms ? await options.resolveLookupTerms() : [];
+      return uniqueItems([word, ...fallbackTerms, ...dynamicTerms]);
+    }
+
+    function buildDictionaryApiSource(word, options = {}) {
       return {
         id: `dictapi-${word}`,
         name: 'DictionaryAPI',
         icon: '📘',
         url: `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
         load: async () => {
-          const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-          if (!response.ok) {
-            return { state: 'empty', note: 'No English entry from DictionaryAPI.' };
-          }
-          const data = await response.json();
-          const entry = data[0];
-          if (!entry) {
-            return { state: 'empty', note: 'No English entry from DictionaryAPI.' };
-          }
-          const items = [];
-          for (const meaning of (entry.meanings || []).slice(0, 3)) {
-            for (const def of (meaning.definitions || []).slice(0, 2)) {
-              items.push({ label: meaning.partOfSpeech, text: def.definition, example: def.example || '' });
+          const lookupTerms = await resolveLookupTerms(word, options);
+          for (const lookupTerm of lookupTerms) {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(lookupTerm)}`);
+            if (!response.ok) {
+              continue;
             }
+            const data = await response.json();
+            const entry = data[0];
+            if (!entry) {
+              continue;
+            }
+            const items = [];
+            for (const meaning of (entry.meanings || []).slice(0, 3)) {
+              for (const def of (meaning.definitions || []).slice(0, 2)) {
+                items.push({ label: meaning.partOfSpeech, text: def.definition, example: def.example || '' });
+              }
+            }
+            const resolvedViaTranslation = lookupTerm.toLowerCase() !== word.toLowerCase();
+            return {
+              state: 'live',
+              heading: entry.word,
+              meta: entry.phonetic || entry.phonetics?.find(item => item.text)?.text || (resolvedViaTranslation ? `English definition via “${lookupTerm}”` : 'English definition'),
+              items,
+              tags: (entry.meanings || []).flatMap(meaning => meaning.synonyms || []).slice(0, 6),
+              action: entry.phonetics?.find(item => item.audio)?.audio || '',
+              sourceUrl: `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(lookupTerm)}`,
+              note: resolvedViaTranslation
+                ? `Rendered in-app from a compatible English lookup derived from “${word}”.`
+                : 'Rendered in-app from a public source.'
+            };
           }
-          return {
-            state: 'live',
-            heading: entry.word,
-            meta: entry.phonetic || entry.phonetics?.find(item => item.text)?.text || 'English definition',
-            items,
-            tags: (entry.meanings || []).flatMap(meaning => meaning.synonyms || []).slice(0, 6),
-            action: entry.phonetics?.find(item => item.audio)?.audio || ''
-          };
+          return { state: 'empty', note: 'No English entry from DictionaryAPI.' };
         }
       };
     }
@@ -957,34 +1001,43 @@
       };
     }
 
-    function buildWiktionarySource(word, languageKey, shortKey, name) {
+    function buildWiktionarySource(word, languageKey, shortKey, name, options = {}) {
       return {
         id: `wiktionary-${shortKey}-${word}`,
         name,
         icon: shortKey === 'ca' ? '📖' : '📚',
         url: `https://en.wiktionary.org/wiki/${enc(word)}`,
         load: async () => {
-          const response = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word)}`);
-          if (!response.ok) {
-            return { state: 'empty', note: `No ${languageKey.toLowerCase()} entry from Wiktionary.` };
-          }
-          const data = await response.json();
-          const sections = data[shortKey] || data[languageKey];
-          if (!sections || !sections.length) {
-            return { state: 'empty', note: `No ${languageKey.toLowerCase()} entry from Wiktionary.` };
-          }
-          const items = [];
-          for (const section of sections.slice(0, 3)) {
-            for (const def of (section.definitions || []).slice(0, 2)) {
-              items.push({ label: section.partOfSpeech || languageKey, html: sanitizeHtml(def.definition) });
+          const lookupTerms = await resolveLookupTerms(word, options);
+          for (const lookupTerm of lookupTerms) {
+            const response = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(lookupTerm)}`);
+            if (!response.ok) {
+              continue;
             }
+            const data = await response.json();
+            const sections = data[shortKey] || data[languageKey];
+            if (!sections || !sections.length) {
+              continue;
+            }
+            const items = [];
+            for (const section of sections.slice(0, 3)) {
+              for (const def of (section.definitions || []).slice(0, 2)) {
+                items.push({ label: section.partOfSpeech || languageKey, html: sanitizeHtml(def.definition) });
+              }
+            }
+            const resolvedViaTranslation = lookupTerm.toLowerCase() !== word.toLowerCase();
+            return {
+              state: 'live',
+              heading: lookupTerm,
+              meta: resolvedViaTranslation ? `${languageKey} entry via “${lookupTerm}”` : `${languageKey} entry`,
+              items,
+              sourceUrl: `https://en.wiktionary.org/wiki/${enc(lookupTerm)}`,
+              note: resolvedViaTranslation
+                ? `Rendered in-app from a compatible ${languageKey.toLowerCase()} lookup derived from “${word}”.`
+                : 'Rendered in-app from a public source.'
+            };
           }
-          return {
-            state: 'live',
-            heading: word,
-            meta: `${languageKey} entry`,
-            items
-          };
+          return { state: 'empty', note: `No ${languageKey.toLowerCase()} entry from Wiktionary.` };
         }
       };
     }
@@ -1015,6 +1068,120 @@
           };
         }
       };
+    }
+
+    function getExternalMirrorSources(word, context = {}) {
+      const configs = EXTERNAL_SOURCES[mode] || [];
+      return configs.flatMap(source => {
+        if (!shouldMirrorSource(source)) return [];
+        return [buildMirrorSource(source, word, context)];
+      });
+    }
+
+    function shouldMirrorSource(source) {
+      const disabledNames = new Set(['Wiktionary', 'Google Translate', 'DeepL']);
+      if (disabledNames.has(source.name)) return false;
+      return true;
+    }
+
+    function buildMirrorSource(source, word, context = {}) {
+      return {
+        id: `mirror-${source.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${word}`,
+        name: source.name,
+        icon: source.icon,
+        url: source.url(word),
+        load: async () => {
+          const targets = await getMirrorTargets(source, word, context);
+          for (const target of targets) {
+            const mirrored = await fetchMirrorPreview(target);
+            const parsed = parseMirrorPreview(mirrored, source, word, target);
+            if (parsed) {
+              return parsed;
+            }
+          }
+          return { state: 'empty', note: `No in-app preview available from ${source.name}.` };
+        }
+      };
+    }
+
+    async function getMirrorTargets(source, word, context = {}) {
+      const direct = source.url(word);
+      const englishBridgeLookup = context.englishBridgeLookup || (() => Promise.resolve([]));
+
+      if (mode === 'caen' && source.name === 'Cambridge EN→CA') {
+        const englishTerms = await englishBridgeLookup();
+        return uniqueItems(englishTerms.map(term => `https://dictionary.cambridge.org/dictionary/english-catalan/${enc(term)}`).concat(direct));
+      }
+
+      if (mode === 'caen' && source.name === 'Glosbe EN→CA') {
+        const englishTerms = await englishBridgeLookup();
+        return uniqueItems(englishTerms.map(term => `https://glosbe.com/en/ca/${enc(term)}`).concat(direct));
+      }
+
+      return [direct];
+    }
+
+    async function fetchMirrorPreview(targetUrl) {
+      try {
+        const response = await fetch(`https://r.jina.ai/http://${targetUrl}`);
+        if (!response.ok) return '';
+        return await response.text();
+      } catch {
+        return '';
+      }
+    }
+
+    function parseMirrorPreview(rawText, source, word, sourceUrl) {
+      if (!rawText) return null;
+      if (/SecurityCompromiseError/i.test(rawText)) return null;
+      if (/Target URL returned error 404/i.test(rawText)) return null;
+      if (/Target URL returned error 403/i.test(rawText)) return null;
+
+      const titleMatch = rawText.match(/^Title:\s*(.+)$/m);
+      const markdown = rawText.includes('Markdown Content:') ? rawText.split('Markdown Content:')[1] : rawText;
+      const cleanedLines = uniqueItems(markdown
+        .split('\n')
+        .map(cleanMirrorLine)
+        .filter(line => isUsefulMirrorLine(line, word)));
+
+      const title = cleanMirrorLine(titleMatch?.[1] || source.name);
+      const items = cleanedLines.slice(0, 5).map(text => ({ text }));
+      if (!items.length) return null;
+
+      return {
+        state: 'live',
+        heading: source.name,
+        meta: title,
+        items,
+        sourceUrl,
+        note: `Rendered in-app from a mirror preview of ${source.name}.`
+      };
+    }
+
+    function cleanMirrorLine(line) {
+      return (line || '')
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/^#+\s*/, '')
+        .replace(/^[-*+]\s+/, '')
+        .replace(/^\d+\.\s+/, '')
+        .replace(/[`*_>#]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function isUsefulMirrorLine(line, word) {
+      if (!line) return false;
+      if (line.length < 18 || line.length > 260) return false;
+      if (!/[A-Za-zÀ-ÿ]/.test(line)) return false;
+      const generic = [
+        'Search', 'Menu', 'Dictionary', 'Translations of', 'Open source', 'Cambridge Dictionary',
+        'Merriam Webster', 'Longman Dictionary', 'Collins English Dictionary', 'Did you spell it correctly',
+        'Vés al contingut', 'Add to My Word Lists', 'Translation of', 'Examples of', 'Browse'
+      ];
+      if (generic.some(fragment => line === fragment || line.startsWith(`${fragment} `))) return false;
+      if (line.toLowerCase() === word.toLowerCase()) return false;
+      return true;
     }
 
     function renderLoadingCard(source) {
@@ -1090,8 +1257,8 @@
         </div>
         ${body}
         <div class="api-actions">
-          <div class="api-note">${result.state === 'live' ? 'Rendered in-app from a public source.' : 'This source returned nothing for the current query.'}</div>
-          <a class="api-link" href="${escAttr(source.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>
+          <div class="api-note">${escHtml(result.state === 'live' ? (result.note || 'Rendered in-app from a public source.') : 'This source returned nothing for the current query.')}</div>
+          <a class="api-link" href="${escAttr(result.sourceUrl || source.url)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>
         </div>
       </article>`;
     }
