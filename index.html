@@ -389,50 +389,7 @@
       transform: scale(0.98);
     }
 
-    /* Mode Tabs */
-    .mode-selector {
-      display: flex;
-      background: var(--bg-alt);
-      border: 1px solid var(--border);
-      padding: 0.25rem;
-      border-radius: var(--radius-md);
-      gap: 0.2rem;
-    }
 
-    body.idle .mode-selector {
-      margin-top: 0.5rem;
-    }
-
-    .mode-tab {
-      padding: 0.4rem 0.9rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      font-family: inherit;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .mode-tab:hover {
-      color: var(--text);
-    }
-
-    .mode-tab.active {
-      background: var(--surface);
-      color: var(--primary);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .mode-tab .flag-icon {
-      font-size: 1rem;
-    }
 
     .kbd-shortcut-hint {
       font-size: 0.75rem;
@@ -527,47 +484,57 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* View Switcher Tabs (Unified / Sources / Reference) */
-    .content-nav-bar {
+    /* Bilingual Bridge Card */
+    .bilingual-bridge {
+      margin-top: 0.5rem;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.8rem 1.1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.75rem;
-      margin-bottom: 1.5rem;
       flex-wrap: wrap;
-      gap: 0.8rem;
+      gap: 0.75rem;
+      box-shadow: var(--shadow-sm);
     }
 
-    .content-tabs {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .content-tab-btn {
-      background: none;
-      border: none;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--muted);
-      padding: 0.45rem 0.9rem;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
+    .bilingual-bridge-main {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s ease;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
 
-    .content-tab-btn:hover {
-      color: var(--text);
-      background: var(--surface-hover);
-    }
-
-    .content-tab-btn.active {
-      color: var(--primary);
+    .bilingual-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-sm);
       background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .bilingual-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .bilingual-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .bilingual-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
     }
 
     .speed-controller {
@@ -1044,31 +1011,8 @@
       color: var(--text-secondary);
     }
 
-    /* ═══════════════════════════════════════════════════
-       SOURCE CARDS TAB (Live Embeddable Dictionaries)
-    ═══════════════════════════════════════════════════ */
-    .sources-view {
-      display: none;
-    }
-
-    .sources-view.active {
+    .unified-view {
       display: block;
-    }
-
-    .unified-view.active {
-      display: block;
-    }
-
-    .unified-view:not(.active) {
-      display: none;
-    }
-
-    .reference-view.active {
-      display: block;
-    }
-
-    .reference-view:not(.active) {
-      display: none;
     }
 
     .source-grid {
@@ -1574,22 +1518,10 @@
         <div class="search-container">
           <form class="search-input-shell" id="searchForm" onsubmit="handleFormSubmit(event)">
             <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Search a word, phrase, or idiom…" autofocus autocomplete="off" spellcheck="false">
+            <input type="text" id="searchInput" placeholder="Search any word, phrase, or translation…" autofocus autocomplete="off" spellcheck="false">
             <button type="button" class="clear-search-btn" id="clearSearchBtn" title="Clear input">✕</button>
             <button type="submit" class="search-submit-btn">Search</button>
           </form>
-        </div>
-
-        <div class="mode-selector" id="modeTabs">
-          <button type="button" class="mode-tab active" data-mode="en">
-            English
-          </button>
-          <button type="button" class="mode-tab" data-mode="ca">
-            Català
-          </button>
-          <button type="button" class="mode-tab" data-mode="caen">
-            CA ↔ EN
-          </button>
         </div>
 
         <div class="kbd-shortcut-hint">
@@ -1607,28 +1539,6 @@
 
     <!-- MAIN VIEWPORT (HAS RESULTS) -->
     <main class="main-viewport" id="mainViewport">
-      <!-- CONTENT NAVIGATION BAR -->
-      <nav class="content-nav-bar">
-        <div class="content-tabs">
-          <button class="content-tab-btn active" data-view="unified" onclick="switchView('unified')">
-            ✨ Smart Overview
-          </button>
-          <button class="content-tab-btn" data-view="sources" onclick="switchView('sources')">
-            📚 Free Dictionaries <span id="sourcesCounterBadge">(4)</span>
-          </button>
-          <button class="content-tab-btn" data-view="reference" onclick="switchView('reference')">
-            📖 Reference Dictionaries
-          </button>
-        </div>
-
-        <div class="speed-controller" id="speedController">
-          <span>Speech:</span>
-          <button class="speed-btn active" data-speed="1.0" onclick="setSpeechSpeed(1.0)">1.0x</button>
-          <button class="speed-btn" data-speed="0.8" onclick="setSpeechSpeed(0.8)">0.8x (Slow)</button>
-        </div>
-      </nav>
-
-      <!-- VIEW 1: SMART OVERVIEW -->
       <div class="unified-view active" id="unifiedView">
         <div class="hero-word-card" id="heroCard">
           <div class="hero-top-row">
@@ -1641,6 +1551,11 @@
             </div>
 
             <div class="hero-actions">
+              <div class="speed-controller" id="speedController">
+                <span>Speed:</span>
+                <button class="speed-btn active" data-speed="1.0" onclick="setSpeechSpeed(1.0)">1.0x</button>
+                <button class="speed-btn" data-speed="0.8" onclick="setSpeechSpeed(0.8)">0.8x</button>
+              </div>
               <button class="action-pill-btn" id="starWordBtn" onclick="toggleSaveCurrentWord()">
                 <span id="starIcon">⭐</span> <span id="starText">Save</span>
               </button>
@@ -1655,6 +1570,9 @@
 
           <!-- PRONUNCIATION ROW -->
           <div class="pronunciation-row" id="pronunciationRow"></div>
+
+          <!-- BILINGUAL TRANSLATION BRIDGE -->
+          <div class="bilingual-bridge" id="bilingualBridge" style="display: none;"></div>
 
           <!-- INTUITIVE EXPLANATION -->
           <div class="intuitive-explain-box" id="intuitiveBox" style="display: none;">
@@ -1727,26 +1645,6 @@
           </aside>
         </div>
       </div>
-
-      <!-- VIEW 2: FREE SOURCES GRID -->
-      <div class="sources-view" id="sourcesView">
-        <div class="source-grid" id="sourcesGrid"></div>
-      </div>
-
-      <!-- VIEW 3: REFERENCE DICTIONARIES -->
-      <div class="reference-view" id="referenceView">
-        <div class="reference-section-card">
-          <div class="ref-header-row">
-            <h2 class="ref-section-title" id="refSectionTitle">
-              📖 Reference Dictionaries & Pronunciation Guides
-            </h2>
-            <button class="ref-batch-btn" id="openAllRefsBtn" onclick="openAllReferences()">
-              Open all in tabs ↗
-            </button>
-          </div>
-          <div class="ref-grid" id="refGrid"></div>
-        </div>
-      </div>
     </main>
 
     <!-- FOOTER -->
@@ -1798,10 +1696,8 @@
     /* ═══════════════════════════════════════════════════
        STATE MANAGEMENT
     ═══════════════════════════════════════════════════ */
-    let currentMode = localStorage.getItem('vocab-mode') || 'en';
     let currentWord = '';
     let currentSpeechRate = 1.0;
-    let currentActiveView = 'unified';
     let currentWordData = null; // aggregated result
     let searchSequence = 0;
     let currentlyPlayingAudio = null;
@@ -1809,138 +1705,6 @@
     // Saved words list
     let savedWords = JSON.parse(localStorage.getItem('vocab-saved-words') || '[]');
     let recentSearches = JSON.parse(localStorage.getItem('vocab-recents') || '["serendipity","ephemeral","resilient","eloquent"]');
-
-    /* ═══════════════════════════════════════════════════
-       DICTIONARY REFERENCE CONFIGURATION
-    ═══════════════════════════════════════════════════ */
-    const REFERENCES = {
-      en: [
-        {
-          name: 'Merriam-Webster',
-          desc: 'Comprehensive collegiate dictionary',
-          icon: '📕',
-          url: w => 'https://www.merriam-webster.com/dictionary/' + enc(w),
-          embeddable: false
-        },
-        {
-          name: 'American Heritage',
-          desc: 'Contemporary dictionary & word origins',
-          icon: '📘',
-          url: w => 'https://www.ahdictionary.com/word/search.html?q=' + enc(w),
-          embeddable: false
-        },
-        {
-          name: 'YouGlish',
-          desc: 'Real-world video pronunciation clips',
-          icon: '🎬',
-          url: w => 'https://youglish.com/pronounce/' + enc(w) + '/english/us',
-          embeddable: true,
-          embedUrl: w => 'https://youglish.com/pronounce/' + enc(w) + '/english/us'
-        },
-        {
-          name: 'WordNet (Princeton)',
-          desc: 'Princeton University lexical semantic network',
-          icon: '🏛️',
-          url: w => 'http://wordnetweb.princeton.edu/perl/webwn?s=' + enc(w),
-          embeddable: true,
-          embedUrl: w => 'http://wordnetweb.princeton.edu/perl/webwn?s=' + enc(w)
-        },
-        {
-          name: 'Wiktionary',
-          desc: 'Free collaborative dictionary with full IPA',
-          icon: '📖',
-          url: w => 'https://en.wiktionary.org/wiki/' + enc(w),
-          embeddable: true,
-          embedUrl: w => 'https://en.m.wiktionary.org/wiki/' + enc(w)
-        },
-        {
-          name: 'Thesaurus.com',
-          desc: 'Comprehensive synonyms, nuances, and antonyms',
-          icon: '🔠',
-          url: w => 'https://www.thesaurus.com/browse/' + enc(w),
-          embeddable: false
-        },
-        {
-          name: 'Online Etymology',
-          desc: 'History, origins, and morphological evolution',
-          icon: '📜',
-          url: w => 'https://www.etymonline.com/word/' + enc(w),
-          embeddable: false
-        },
-        {
-          name: 'Cambridge',
-          desc: 'Clear definitions with audio & usage examples',
-          icon: '📗',
-          url: w => 'https://dictionary.cambridge.org/us/dictionary/english/' + enc(w),
-          embeddable: false
-        },
-      ],
-      ca: [
-        {
-          name: 'DIEC2',
-          desc: 'Diccionari de l’Institut d’Estudis Catalans',
-          icon: '📘',
-          url: w => 'https://dlc.iec.cat/Results?DecEntryWord=' + encodeURIComponent(w) + '&CurrentOper=cerca&OperEntry=0'
-        },
-        {
-          name: 'DCVB',
-          desc: 'Diccionari català-valencià-balear (Alcover-Moll)',
-          icon: '📕',
-          url: w => 'https://dcvb.iec.cat/results.asp?Word=' + encodeURIComponent(w)
-        },
-        {
-          name: 'Viccionari',
-          desc: 'Diccionari lliure en català',
-          icon: '📖',
-          url: w => 'https://ca.wiktionary.org/wiki/' + enc(w)
-        },
-        {
-          name: 'Optimot',
-          desc: 'Consultes lingüístiques de la Generalitat de Catalunya',
-          icon: '🗣️',
-          url: w => 'https://aplicacions.llengua.gencat.cat/llc/AppJava/index.html?input_cercat=' + encodeURIComponent(w) + '&action=Principal&method=detall'
-        },
-        {
-          name: 'Softcatalà Sinònims',
-          desc: 'Diccionari de sinònims en català',
-          icon: '🔤',
-          url: w => 'https://www.softcatala.org/diccionari-de-sinonims/paraula/' + enc(w) + '/'
-        }
-      ],
-      caen: [
-        {
-          name: 'Cambridge EN→CA',
-          desc: 'Traducció anglès a català',
-          icon: '📘',
-          url: w => 'https://dictionary.cambridge.org/dictionary/english-catalan/' + enc(w)
-        },
-        {
-          name: 'Cambridge CA→EN',
-          desc: 'Traducció català a anglès',
-          icon: '📙',
-          url: w => 'https://dictionary.cambridge.org/dictionary/catalan-english/' + enc(w)
-        },
-        {
-          name: 'Glosbe CA↔EN',
-          desc: 'Diccionari multilingüe col·laboratiu',
-          icon: '🔄',
-          url: w => 'https://glosbe.com/ca/en/' + enc(w)
-        },
-        {
-          name: 'DeepL',
-          desc: 'Traductor automàtic d’alta precisió',
-          icon: '🤖',
-          url: w => 'https://www.deepl.com/translator#ca/en/' + encodeURIComponent(w)
-        },
-        {
-          name: 'Google Translate',
-          desc: 'Traducció ràpida',
-          icon: '🌐',
-          url: w => 'https://translate.google.com/?sl=auto&tl=en&text=' + encodeURIComponent(w)
-        }
-      ]
-    };
-
     /* ═══════════════════════════════════════════════════
        DOM HELPER UTILITIES
     ═══════════════════════════════════════════════════ */
@@ -1983,9 +1747,6 @@
       // Update saved count badge
       updateSavedBadge();
 
-      // Apply initial mode
-      applyMode(currentMode, false);
-
       // URL Hash Routing
       handleHashChange();
       window.addEventListener('hashchange', handleHashChange);
@@ -2007,14 +1768,6 @@
         searchInput.value = '';
         clearBtn.style.display = 'none';
         searchInput.focus();
-      });
-
-      // Mode tabs click handlers
-      $$('.mode-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          applyMode(tab.dataset.mode, true);
-          if (currentWord) doSearch(currentWord);
-        });
       });
 
       // Global Keyboard Shortcuts
@@ -2041,12 +1794,7 @@
       if (!hash) return;
 
       const parts = hash.split('|');
-      if (parts.length === 2 && REFERENCES[parts[0]]) {
-        applyMode(parts[0], false);
-        currentWord = parts[1];
-      } else {
-        currentWord = hash;
-      }
+      currentWord = parts.length === 2 ? parts[1] : hash;
 
       $('searchInput').value = currentWord;
       $('clearSearchBtn').style.display = currentWord ? 'block' : 'none';
@@ -2057,32 +1805,6 @@
       if (e) e.preventDefault();
       const val = $('searchInput').value.trim();
       if (val) doSearch(val);
-    }
-
-    function applyMode(mode, save) {
-      currentMode = mode;
-      if (save) localStorage.setItem('vocab-mode', mode);
-
-      $$('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
-
-      // Update placeholder
-      const searchInput = $('searchInput');
-      if (mode === 'en') {
-        searchInput.placeholder = 'Search a word, phrase, or idiom…';
-      } else if (mode === 'ca') {
-        searchInput.placeholder = 'Cerca una paraula o expressió en català…';
-      } else {
-        searchInput.placeholder = 'Traducció català ↔ anglès (type a word)…';
-      }
-
-      // Update reference section title
-      if (mode === 'en') {
-        $('refSectionTitle').innerHTML = '📖 Reference Dictionaries & Pronunciation Guides';
-      } else if (mode === 'ca') {
-        $('refSectionTitle').innerHTML = '📘 Diccionaris i eines de referència en català';
-      } else {
-        $('refSectionTitle').innerHTML = '🔄 Eines i recursos de traducció Català ↔ Anglès';
-      }
     }
 
     function goHome() {
@@ -2123,7 +1845,7 @@
         });
     }
 
-    async function executeEnglishAggregation(word, seq) {
+    async function executeUnifiedAggregation(word, seq) {
       let state = {
         freeDict: null,
         wikt: null,
@@ -2133,20 +1855,21 @@
         related: [],
         rhymes: [],
         collocations: [],
-        wiki: null
+        wiki: null,
+        enToCa: null,
+        caToEn: null
       };
 
-      // 1. Wiktionary Task (High speed & high uptime dictionary definitions & examples)
-      const wiktTask = fetchJsonWithTimeout('https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word), 3200)
+      // 1. Wiktionary Task (High speed definitions in English and Catalan)
+      const wiktTask = fetchJsonWithTimeout('https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word), 3000)
         .then(data => {
           if (seq !== searchSequence) return;
           state.wikt = data;
-          renderWiktionaryCard(word, data);
-          // If Free Dictionary hasn't loaded yet, show Wiktionary definitions immediately
           if (!state.freeDict) {
             renderDefinitionsGroup(null, state.wikt, state.datamuse);
             const pron = extractAmericanAndBritishPronunciation(word, null, state.wikt);
-            renderPronunciationPills(pron, word);
+            const caTarget = state.enToCa?.responseData?.translatedText;
+            renderPronunciationPills(pron, word, caTarget);
             updateIntuitiveBox(word, null, state.datamuse, state.wiki, state.wikt);
           }
         });
@@ -2167,12 +1890,6 @@
         state.related = (dmRel || []).map(x => x.word);
         state.rhymes = (dmRhy || []).map(x => x.word);
         state.collocations = (dmCol || []).map(x => x.word);
-
-        renderDatamuseCard(word, {
-          datamuseData: state.datamuse,
-          synonymsList: state.synonyms,
-          relatedList: state.related
-        });
 
         // Update Syllables & Frequency on Hero
         if (state.datamuse) {
@@ -2200,56 +1917,121 @@
         renderWordChipsCloud('collocationsCard', 'collocationsCloud', state.collocations, false);
       });
 
-      // 3. Wikipedia Summary Task (Fast encyclopedic context)
+      // 3. Translation Tasks (Bilingual English ↔ Català)
+      const transTasks = Promise.all([
+        fetchJsonWithTimeout('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=en|ca', 3000),
+        fetchJsonWithTimeout('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=ca|en', 3000),
+      ]).then(([enCa, caEn]) => {
+        if (seq !== searchSequence) return;
+        state.enToCa = enCa;
+        state.caToEn = caEn;
+        const isCatalan = !!(state.wikt?.ca?.length);
+        renderBilingualBridge(word, enCa, caEn, isCatalan);
+
+        const pron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
+        const caTarget = enCa?.responseData?.translatedText;
+        renderPronunciationPills(pron, word, caTarget);
+      });
+
+      // 4. Wikipedia Summary Task
       const wikiTask = fetchJsonWithTimeout('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(word), 2500)
         .then(data => {
           if (seq !== searchSequence) return;
           state.wiki = data;
-          renderWikipediaCard(word, data);
           updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
         });
 
-      // 4. Free Dictionary API (Strict timeout: 2600ms to prevent hanging on Cloudflare 522)
-      const freeDictTask = fetchJsonWithTimeout('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word), 2600)
+      // 5. Free Dictionary API (2.5s strict timeout)
+      const freeDictTask = fetchJsonWithTimeout('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word), 2500)
         .then(data => {
           if (seq !== searchSequence) return;
           state.freeDict = data;
-          renderFreeDictCard(word, data, state.wikt);
           if (data) {
             renderDefinitionsGroup(state.freeDict, state.wikt, state.datamuse);
             const pron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
-            renderPronunciationPills(pron, word);
+            const caTarget = state.enToCa?.responseData?.translatedText;
+            renderPronunciationPills(pron, word, caTarget);
             renderEtymology(state.freeDict, state.wikt);
             updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
           }
-        })
-        .catch(() => {
-          if (seq !== searchSequence) return;
-          renderFreeDictCard(word, null, state.wikt);
         });
 
       // Await all tasks to settle
-      await Promise.allSettled([wiktTask, dmTasks, wikiTask, freeDictTask]);
+      await Promise.allSettled([wiktTask, dmTasks, transTasks, wikiTask, freeDictTask]);
       if (seq !== searchSequence) return;
 
       // Final pass: ensure all components are fully synced
+      const isCatalanFinal = !!(state.wikt?.ca?.length);
+      renderBilingualBridge(word, state.enToCa, state.caToEn, isCatalanFinal);
       renderDefinitionsGroup(state.freeDict, state.wikt, state.datamuse);
       const finalPron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
-      renderPronunciationPills(finalPron, word);
+      const finalCaTarget = state.enToCa?.responseData?.translatedText;
+      renderPronunciationPills(finalPron, word, finalCaTarget);
       updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
       renderEtymology(state.freeDict, state.wikt);
 
-      // Finalize source cards
-      renderFreeDictCard(word, state.freeDict, state.wikt);
-      renderWiktionaryCard(word, state.wikt);
-      renderDatamuseCard(word, {
-        datamuseData: state.datamuse,
-        synonymsList: state.synonyms,
-        relatedList: state.related
-      });
-      renderWikipediaCard(word, state.wiki);
-
       currentWordData = { word, freeDictData: state.freeDict, wiktData: state.wikt };
+    }
+
+    function renderBilingualBridge(word, enToCa, caEn, isCatalan) {
+      const bridge = $('bilingualBridge');
+      if (!bridge) return;
+
+      const caText = enToCa?.responseData?.translatedText?.trim();
+      const enText = caEn?.responseData?.translatedText?.trim();
+
+      const hasCa = caText && caText.toLowerCase() !== word.toLowerCase();
+      const hasEn = enText && enText.toLowerCase() !== word.toLowerCase();
+
+      if (!hasCa && !hasEn && !caText && !enText) {
+        bridge.style.display = 'none';
+        return;
+      }
+
+      let primaryLabel = '';
+      let primaryTrans = '';
+      let secondaryTrans = '';
+      let targetLang = 'ca-ES';
+
+      if (isCatalan && hasEn) {
+        primaryLabel = 'English Translation';
+        primaryTrans = enText;
+        targetLang = 'en-US';
+        if (hasCa && caText.toLowerCase() !== enText.toLowerCase()) {
+          secondaryTrans = `Català: ${caText}`;
+        }
+      } else if (hasCa) {
+        primaryLabel = 'Català';
+        primaryTrans = caText;
+        targetLang = 'ca-ES';
+        if (hasEn && enText.toLowerCase() !== word.toLowerCase() && enText.toLowerCase() !== caText.toLowerCase()) {
+          secondaryTrans = `Variant en anglès: ${enText}`;
+        }
+      } else if (hasEn) {
+        primaryLabel = 'English Translation';
+        primaryTrans = enText;
+        targetLang = 'en-US';
+      } else {
+        primaryLabel = 'Català / English';
+        primaryTrans = caText || enText;
+      }
+
+      bridge.innerHTML = `
+        <div class="bilingual-bridge-main">
+          <span class="bilingual-badge">🔄 ${escHtml(primaryLabel)}</span>
+          <span class="bilingual-text">${escHtml(primaryTrans)}</span>
+          ${secondaryTrans ? `<span class="bilingual-sub">· ${escHtml(secondaryTrans)}</span>` : ''}
+        </div>
+        <div class="bilingual-actions">
+          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(primaryTrans)}', '${targetLang}')" title="Listen to pronunciation">
+            🔊
+          </button>
+          <button class="clickable-word-chip" onclick="searchWord('${escAttr(primaryTrans)}')" title="Lookup ${escAttr(primaryTrans)}">
+            Lookup “${escHtml(primaryTrans)}” ↗
+          </button>
+        </div>
+      `;
+      bridge.style.display = 'flex';
     }
 
     function updateIntuitiveBox(word, freeDict, datamuse, wiki, wikt) {
@@ -2278,18 +2060,6 @@
       showToast(`Switched to ${next} mode`);
     }
 
-    /* ═══════════════════════════════════════════════════
-       VIEW SWITCHING (Smart Overview vs Sources vs Reference)
-    ═══════════════════════════════════════════════════ */
-    function switchView(viewName) {
-      currentActiveView = viewName;
-      $$('.content-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
-
-      $('unifiedView').classList.toggle('active', viewName === 'unified');
-      $('sourcesView').classList.toggle('active', viewName === 'sources');
-      $('referenceView').classList.toggle('active', viewName === 'reference');
-    }
-
     function setSpeechSpeed(speed) {
       currentSpeechRate = speed;
       $$('.speed-btn').forEach(btn => btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed));
@@ -2308,7 +2078,7 @@
       const seq = searchSequence;
 
       document.body.className = 'has-results';
-      location.hash = currentMode + '|' + encodeURIComponent(word);
+      location.hash = encodeURIComponent(word);
 
       // Save to recent searches
       addRecentSearch(word);
@@ -2318,25 +2088,15 @@
       $('heroSyllables').textContent = '';
       $('heroFrequency').style.display = 'none';
       $('pronunciationRow').innerHTML = '<div class="loading-state-box" style="padding: 0.5rem 0;"><div class="spinner"></div> Fetching pronunciations…</div>';
+      $('bilingualBridge').style.display = 'none';
       $('intuitiveBox').style.display = 'none';
+      $('definitionsContainer').innerHTML = '<div class="loading-state-box"><div class="spinner"></div> Loading definitions, translations & examples…</div>';
 
       // Update Saved/Starred state
       updateStarButtonState();
 
-      // Render References tab immediately
-      renderReferenceGrid(word);
-
-      // Render placeholders for Sources tab
-      renderSourcePlaceholders(word);
-
-      // Fetch data based on mode
-      if (currentMode === 'en') {
-        await executeEnglishAggregation(word, seq);
-      } else if (currentMode === 'ca') {
-        await executeCatalanAggregation(word, seq);
-      } else {
-        await executeBilingualAggregation(word, seq);
-      }
+      // Unified Aggregation (English, Català & Bilingual translation)
+      await executeUnifiedAggregation(word, seq);
     }
 
     /* ═══════════════════════════════════════════════════
@@ -2399,33 +2159,47 @@
       };
     }
 
-    function renderPronunciationPills(pron, word) {
+    function renderPronunciationPills(pron, word, caWord) {
       const container = $('pronunciationRow');
       let html = '';
 
-      // 1. Primary Pronunciation Pill
-      html += `
-        <div class="accent-pill us-primary">
-          <span class="flag-label">Pronunciation</span>
-          <span class="ipa-text">${escHtml(pron.us.phonetic)}</span>
-          <button class="audio-play-btn" onclick="playAmericanAudio('${escAttr(pron.us.audio)}', '${escAttr(word)}')" title="Listen to pronunciation">
-            🔊
-          </button>
-        </div>
-      `;
+      // 1. Primary English Pronunciation Pill
+      if (pron.us.phonetic || pron.us.audio) {
+        html += `
+          <div class="accent-pill us-primary">
+            <span class="flag-label">Pronunciation</span>
+            <span class="ipa-text">${escHtml(pron.us.phonetic)}</span>
+            <button class="audio-play-btn" onclick="playAmericanAudio('${escAttr(pron.us.audio)}', '${escAttr(word)}')" title="Listen to pronunciation">
+              🔊
+            </button>
+          </div>
+        `;
+      }
 
       // 2. Secondary UK Pronunciation Pill (if distinct)
       if (pron.uk.audio || (pron.uk.phonetic && pron.uk.phonetic !== pron.us.phonetic)) {
         html += `
           <div class="accent-pill uk-secondary">
             <span class="flag-label">UK</span>
-            <span class="ipa-text">${escHtml(pron.uk.phonetic || pron.uk.phonetic)}</span>
+            <span class="ipa-text">${escHtml(pron.uk.phonetic)}</span>
             <button class="audio-play-btn" onclick="playAudioFile('${escAttr(pron.uk.audio || '')}', '${escAttr(word)}', 'en-GB')" title="Listen to UK pronunciation">
               🔊
             </button>
           </div>
         `;
       }
+
+      // 3. Catalan Pronunciation Pill
+      const catWordToSpeak = caWord || word;
+      html += `
+        <div class="accent-pill" style="border-color: rgba(59, 130, 246, 0.3);">
+          <span class="flag-label" style="color: #3b82f6;">Català</span>
+          <span class="ipa-text">${escHtml(catWordToSpeak)}</span>
+          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(catWordToSpeak)}', 'ca-ES')" title="Listen to Catalan pronunciation">
+            🔊
+          </button>
+        </div>
+      `;
 
       container.innerHTML = html;
     }
@@ -2761,354 +2535,6 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       VIEW 2: FREE EMBEDDABLE SOURCES CARDS
-    ═══════════════════════════════════════════════════ */
-    function renderSourcePlaceholders(word) {
-      const grid = $('sourcesGrid');
-      const sources = [
-        { id: 'srcCard-freedict', name: 'Free Dictionary API', icon: '📘', domain: 'api.dictionaryapi.dev' },
-        { id: 'srcCard-wiktionary', name: 'Wiktionary', icon: '📖', domain: 'en.wiktionary.org' },
-        { id: 'srcCard-datamuse', name: 'Datamuse Lexical Engine', icon: '🧠', domain: 'api.datamuse.com' },
-        { id: 'srcCard-wikipedia', name: 'Wikipedia Knowledge Summary', icon: '🌐', domain: 'en.wikipedia.org' }
-      ];
-
-      grid.innerHTML = sources.map(s => `
-        <div class="source-card" id="${s.id}">
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">${s.icon}</span>
-              <span class="source-card-title">${s.name}</span>
-            </div>
-            <span class="source-status-badge">Connecting…</span>
-          </div>
-          <div class="source-card-body">
-            <div class="loading-state-box"><div class="spinner"></div> Fetching source data…</div>
-          </div>
-          <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">${s.domain}</span>
-            <span style="font-size: 0.75rem; color: var(--muted);">Waiting…</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderFreeDictCard(word, freeDict, wikt) {
-      const card = $('srcCard-freedict');
-      if (!card) return;
-
-      if (freeDict && freeDict[0]) {
-        const entry = freeDict[0];
-        const meanings = entry.meanings || [];
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">📘</span>
-              <span class="source-card-title">Free Dictionary API</span>
-            </div>
-            <span class="source-status-badge live">Live Data</span>
-          </div>
-          <div class="source-card-body">
-            <div>
-              ${meanings.slice(0, 3).map(m => {
-                const pos = (m.partOfSpeech || 'definition').toLowerCase();
-                const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
-                const firstDef = m.definitions?.[0];
-                return `
-                  <div style="margin-top: 0.55rem;">
-                    <span class="pos-badge ${badgeClass}">${escHtml(pos)}</span>
-                    <div style="font-size: 0.88rem; margin-top: 0.25rem; line-height: 1.45;">${escHtml(firstDef?.definition || '')}</div>
-                    ${firstDef?.example ? `<div class="def-example-quote" style="margin-top: 0.35rem; font-size: 0.82rem;">“${escHtml(firstDef.example)}”</div>` : ''}
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-          <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">api.dictionaryapi.dev</span>
-            <a class="source-ext-link" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Docs ↗</a>
-          </div>
-        `;
-      } else {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">📘</span>
-              <span class="source-card-title">Free Dictionary API</span>
-            </div>
-            <span class="source-status-badge" style="background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.25);">Server Offline / Timed Out</span>
-          </div>
-          <div class="source-card-body">
-            <p style="font-size: 0.84rem; line-height: 1.45; color: var(--muted); margin-bottom: 0.6rem;">
-              The public <code>api.dictionaryapi.dev</code> server did not respond or timed out.
-            </p>
-            <div style="background: var(--surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
-              ✨ <strong>Vocab Fallback Active:</strong> Full definitions, usage examples, and pronunciation are seamlessly powered by <strong>Wiktionary</strong> and <strong>Datamuse</strong>.
-            </div>
-          </div>
-          <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">api.dictionaryapi.dev</span>
-            <a class="source-ext-link" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Status ↗</a>
-          </div>
-        `;
-      }
-    }
-
-    function renderWiktionaryCard(word, wikt) {
-      const card = $('srcCard-wiktionary');
-      if (!card) return;
-
-      const entries = wikt && (wikt.en || wikt.ca);
-      if (entries && entries.length) {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">📖</span>
-              <span class="source-card-title">Wiktionary REST API</span>
-            </div>
-            <span class="source-status-badge live">Live Data</span>
-          </div>
-          <div class="source-card-body">
-            <div>
-              ${entries.slice(0, 3).map(sec => {
-                const pos = (sec.partOfSpeech || 'definition').toLowerCase();
-                const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
-                const firstDef = sec.definitions?.[0];
-                const defText = firstDef?.definition || '';
-                const ex = firstDef?.examples?.[0] || '';
-                return `
-                  <div style="margin-top: 0.55rem;">
-                    <span class="pos-badge ${badgeClass}">${escHtml(pos)}</span>
-                    <div style="font-size: 0.88rem; margin-top: 0.25rem; line-height: 1.45;">${sanitizeHtml(defText)}</div>
-                    ${ex ? `<div class="def-example-quote" style="margin-top: 0.35rem; font-size: 0.82rem;">“${sanitizeHtml(ex)}”</div>` : ''}
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-          <div class="source-card-foot">
-            <button class="ref-batch-btn" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="openInAppEmbed('https://en.m.wiktionary.org/wiki/${enc(word)}', 'Wiktionary Mobile — ${escAttr(word)}')">Preview Embed 📱</button>
-            <a class="source-ext-link" href="https://en.wiktionary.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Open Wiki ↗</a>
-          </div>
-        `;
-      } else {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">📖</span>
-              <span class="source-card-title">Wiktionary REST API</span>
-            </div>
-            <span class="source-status-badge">No entry</span>
-          </div>
-          <div class="source-card-body">
-            <p style="font-size: 0.84rem; color: var(--muted);">No matching Wiktionary entry found for “${escHtml(word)}”.</p>
-          </div>
-          <div class="source-card-foot">
-            <a class="source-ext-link" href="https://en.wiktionary.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Search Wiktionary ↗</a>
-          </div>
-        `;
-      }
-    }
-
-    function renderDatamuseCard(word, dm) {
-      const card = $('srcCard-datamuse');
-      if (!card) return;
-
-      const hasData = dm && ((dm.synonymsList && dm.synonymsList.length) || (dm.relatedList && dm.relatedList.length) || dm.datamuseData);
-      if (hasData) {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">🧠</span>
-              <span class="source-card-title">Datamuse Lexical Engine</span>
-            </div>
-            <span class="source-status-badge live">Live Data</span>
-          </div>
-          <div class="source-card-body">
-            ${dm.synonymsList && dm.synonymsList.length ? `
-              <div>
-                <span class="sub-syn-label">Synonyms (${dm.synonymsList.length}):</span>
-                <div class="chips-cloud" style="margin-top: 0.35rem;">
-                  ${dm.synonymsList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
-                </div>
-              </div>
-            ` : ''}
-            ${dm.relatedList && dm.relatedList.length ? `
-              <div style="margin-top: 0.6rem;">
-                <span class="sub-syn-label">Related Concepts:</span>
-                <div class="chips-cloud" style="margin-top: 0.35rem;">
-                  ${dm.relatedList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
-                </div>
-              </div>
-            ` : ''}
-            ${dm.datamuseData?.defs?.length ? `
-              <div style="margin-top: 0.6rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
-                ${escHtml(dm.datamuseData.defs[0].replace(/^[a-z]+\t/, ''))}
-              </div>
-            ` : ''}
-          </div>
-          <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">api.datamuse.com</span>
-            <a class="source-ext-link" href="https://www.datamuse.com/api/" target="_blank" rel="noopener noreferrer">API Info ↗</a>
-          </div>
-        `;
-      } else {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">🧠</span>
-              <span class="source-card-title">Datamuse Lexical Engine</span>
-            </div>
-            <span class="source-status-badge">No data</span>
-          </div>
-          <div class="source-card-body">
-            <p style="font-size: 0.84rem; color: var(--muted);">No Datamuse data returned for “${escHtml(word)}”.</p>
-          </div>
-          <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">api.datamuse.com</span>
-          </div>
-        `;
-      }
-    }
-
-    function renderWikipediaCard(word, wiki) {
-      const card = $('srcCard-wikipedia');
-      if (!card) return;
-
-      if (wiki && wiki.extract) {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">🌐</span>
-              <span class="source-card-title">Wikipedia Context</span>
-            </div>
-            <span class="source-status-badge live">Live Data</span>
-          </div>
-          <div class="source-card-body">
-            ${wiki.thumbnail?.source ? `<img src="${escAttr(wiki.thumbnail.source)}" alt="${escAttr(word)}" style="max-height: 120px; width: auto; border-radius: 8px; object-fit: contain; margin-bottom: 0.5rem;">` : ''}
-            <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text);">${escHtml(wiki.extract)}</div>
-          </div>
-          <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">${escHtml(wiki.description || 'Encyclopedic')}</span>
-            ${wiki.content_urls?.desktop?.page ? `<a class="source-ext-link" href="${escAttr(wiki.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Full Article ↗</a>` : ''}
-          </div>
-        `;
-      } else {
-        card.innerHTML = `
-          <div class="source-card-head">
-            <div class="source-card-identity">
-              <span class="source-card-icon">🌐</span>
-              <span class="source-card-title">Wikipedia Context</span>
-            </div>
-            <span class="source-status-badge">No article</span>
-          </div>
-          <div class="source-card-body">
-            <p style="font-size: 0.84rem; color: var(--muted);">No matching Wikipedia article summary found.</p>
-          </div>
-          <div class="source-card-foot">
-            <a class="source-ext-link" href="https://en.wikipedia.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Search Wikipedia ↗</a>
-          </div>
-        `;
-      }
-    }
-
-    /* ═══════════════════════════════════════════════════
-       CATALAN & BILINGUAL AGGREGATION
-    ═══════════════════════════════════════════════════ */
-    async function executeCatalanAggregation(word, seq) {
-      const [wiktRes, mmRes] = await Promise.allSettled([
-        fetch('https://ca.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=ca|en').then(r => r.ok ? r.json() : null).catch(() => null)
-      ]);
-
-      if (seq !== searchSequence) return;
-
-      const wiktData = wiktRes.value;
-      const mmData = mmRes.value;
-
-      $('heroSyllables').textContent = '';
-      $('pronunciationRow').innerHTML = `
-        <div class="accent-pill us-primary">
-          <span class="flag-label">🔵 Català</span>
-          <span class="ipa-text">/${word}/</span>
-          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(word)}', 'ca-ES')">🔊</button>
-        </div>
-      `;
-
-      // Intuitive explanation from translation
-      const translated = mmData?.responseData?.translatedText;
-      if (translated) {
-        $('intuitiveText').textContent = `Significat / Traducció a l'anglès: “${translated}”`;
-        $('intuitiveContext').textContent = 'MyMemory Translation API';
-        $('intuitiveBox').style.display = 'flex';
-      } else {
-        $('intuitiveBox').style.display = 'none';
-      }
-
-      // Render definitions
-      renderDefinitionsGroup(null, wiktData ? { en: wiktData.ca } : null, null);
-      renderReferenceGrid(word);
-    }
-
-    async function executeBilingualAggregation(word, seq) {
-      const [mmCaEn, mmEnCa] = await Promise.allSettled([
-        fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=ca|en').then(r => r.ok ? r.json() : null).catch(() => null),
-        fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=en|ca').then(r => r.ok ? r.json() : null).catch(() => null)
-      ]);
-
-      if (seq !== searchSequence) return;
-
-      const caEn = mmCaEn.value?.responseData?.translatedText;
-      const enCa = mmEnCa.value?.responseData?.translatedText;
-
-      $('heroSyllables').textContent = '';
-      $('pronunciationRow').innerHTML = `
-        <div class="accent-pill us-primary">
-          <span class="flag-label">🔄 CA ↔ EN</span>
-          <span class="ipa-text">Bilingual Translation</span>
-          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(word)}', 'en-US')">🔊</button>
-        </div>
-      `;
-
-      let text = '';
-      if (caEn) text += `Català → Anglès: “${caEn}”  `;
-      if (enCa && enCa.toLowerCase() !== caEn?.toLowerCase()) text += `· Anglès → Català: “${enCa}”`;
-
-      $('intuitiveText').textContent = text || 'Sense traducció directa trobada.';
-      $('intuitiveContext').textContent = 'MyMemory Translation';
-      $('intuitiveBox').style.display = 'flex';
-
-      renderReferenceGrid(word);
-    }
-
-    /* ═══════════════════════════════════════════════════
-       VIEW 3: REFERENCE DICTIONARIES GRID
-    ═══════════════════════════════════════════════════ */
-    function renderReferenceGrid(word) {
-      const grid = $('refGrid');
-      const list = REFERENCES[currentMode] || REFERENCES.en;
-
-      grid.innerHTML = list.map(ref => `
-        <a class="ref-card-link" href="${escAttr(ref.url(word))}" target="_blank" rel="noopener noreferrer">
-          <span class="ref-card-icon">${ref.icon}</span>
-          <div class="ref-card-info">
-            <div class="ref-card-name">${escHtml(ref.name)}</div>
-            <div class="ref-card-desc">${escHtml(ref.desc || '')}</div>
-          </div>
-          <span class="ref-card-arrow">↗</span>
-        </a>
-      `).join('');
-    }
-
-    function openAllReferences() {
-      const list = REFERENCES[currentMode] || REFERENCES.en;
-      if (!currentWord) return;
-      list.forEach(ref => {
-        window.open(ref.url(currentWord), '_blank', 'noopener');
-      });
-      showToast(`Opened ${list.length} reference dictionaries in new tabs.`);
-    }
-
-    /* ═══════════════════════════════════════════════════
        EMBED DRAWER / IN-APP VIEWER
     ═══════════════════════════════════════════════════ */
     function openInAppEmbed(url, title) {
@@ -3154,7 +2580,6 @@
       } else {
         savedWords.unshift({
           word: currentWord,
-          mode: currentMode,
           date: new Date().toLocaleDateString()
         });
         showToast(`Saved “${currentWord}” to your vocabulary!`);
@@ -3198,7 +2623,7 @@
       }
 
       body.innerHTML = savedWords.map((item, idx) => `
-        <div class="bookmark-item" onclick="searchFromBookmark('${escAttr(item.word)}', '${escAttr(item.mode)}')">
+        <div class="bookmark-item" onclick="searchFromBookmark('${escAttr(item.word)}')">
           <div>
             <div class="bookmark-word">${escHtml(item.word)}</div>
             <div style="font-size: 0.75rem; color: var(--muted);">${escHtml(item.date || '')}</div>
@@ -3208,11 +2633,8 @@
       `).join('');
     }
 
-    function searchFromBookmark(word, mode) {
+    function searchFromBookmark(word) {
       $('drawerBackdrop').classList.remove('open');
-      if (mode && mode !== currentMode) {
-        applyMode(mode, true);
-      }
       searchWord(word);
     }
 
