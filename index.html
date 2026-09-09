@@ -734,6 +734,7 @@
       font-size: 0.85rem;
       transition: all 0.15s ease;
       flex-shrink: 0;
+      position: relative;
     }
 
     .accent-pill.uk-secondary .audio-play-btn {
@@ -752,6 +753,27 @@
     .audio-play-btn.playing {
       animation: pulseAudio 0.8s infinite alternate;
       background: var(--accent);
+    }
+
+    /* Fetching or decoding. Deliberately quiet — a warm clip passes through
+       this state too fast to see, and only a cold one should draw the eye. */
+    .audio-play-btn.loading {
+      opacity: 0.55;
+      cursor: progress;
+    }
+
+    .audio-play-btn.loading::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: var(--radius-full);
+      border: 2px solid transparent;
+      border-top-color: var(--primary);
+      animation: spinAudio 0.7s linear infinite;
+    }
+
+    @keyframes spinAudio {
+      to { transform: rotate(360deg); }
     }
 
     @keyframes pulseAudio {
@@ -1697,10 +1719,12 @@
        STATE MANAGEMENT
     ═══════════════════════════════════════════════════ */
     let currentWord = '';
-    let currentSpeechRate = 1.0;
+    let currentSpeechRate = parseFloat(localStorage.getItem('vocab-speech-rate')) || 1.0;
     let currentWordData = null; // aggregated result
     let searchSequence = 0;
-    let currentlyPlayingAudio = null;
+    // The Catalan word currently on screen, so a speed change knows what to
+    // re-warm without digging back through the render state.
+    let lastCatalanTarget = '';
 
     // Saved words list
     let savedWords = JSON.parse(localStorage.getItem('vocab-saved-words') || '[]');
@@ -1752,7 +1776,7 @@
       window.addEventListener('hashchange', handleHashChange);
 
       if (!location.hash.slice(1)) {
-        const defaultWord = (getRecentSearches()[0]?.word) || 'pragmatic';
+        const defaultWord = recentSearches[0] || 'pragmatic';
         $('searchInput').value = defaultWord;
         $('clearSearchBtn').style.display = 'block';
         doSearch(defaultWord);
@@ -1778,6 +1802,7 @@
           searchInput.select();
         }
         if (e.key === 'Escape') {
+          stopAllAudio();
           closeEmbedModal();
           $('drawerBackdrop').classList.remove('open');
           searchInput.blur();
@@ -1787,6 +1812,20 @@
       // Drawer trigger
       $('savedWordsBtn').addEventListener('click', toggleSavedDrawer);
       $('themeToggleBtn').addEventListener('click', toggleTheme);
+
+      // One listener covers every audio and lookup button, including the ones
+      // rendered after a search.
+      document.addEventListener('click', handleDelegatedClick);
+
+      // The markup marks 1.0x active; a restored preference may disagree.
+      $$('.speed-btn').forEach(btn => {
+        btn.classList.toggle('active', parseFloat(btn.dataset.speed) === currentSpeechRate);
+      });
+
+      // Enumerating voices takes the engine a moment, and it only reports back
+      // asynchronously. Asking now means the list is ready long before the
+      // first click, instead of that click getting whatever the default is.
+      loadVoices();
     }
 
     function handleHashChange() {
@@ -1794,7 +1833,14 @@
       if (!hash) return;
 
       const parts = hash.split('|');
-      currentWord = parts.length === 2 ? parts[1] : hash;
+      const word = parts.length === 2 ? parts[1] : hash;
+
+      // doSearch writes the hash itself. Without this guard the resulting
+      // hashchange re-entered doSearch, so every lookup ran its whole fan-out
+      // of API calls twice - the second run bumping searchSequence and
+      // cancelling the first one's renders mid-flight.
+      if (word === currentWord) return;
+      currentWord = word;
 
       $('searchInput').value = currentWord;
       $('clearSearchBtn').style.display = currentWord ? 'block' : 'none';
@@ -1868,7 +1914,7 @@
           if (!state.freeDict) {
             renderDefinitionsGroup(null, state.wikt, state.datamuse);
             const pron = extractAmericanAndBritishPronunciation(word, null, state.wikt);
-            const caTarget = state.enToCa?.responseData?.translatedText;
+            const caTarget = pickTranslation(state.enToCa, word);
             renderPronunciationPills(pron, word, caTarget);
             updateIntuitiveBox(word, null, state.datamuse, state.wiki, state.wikt);
           }
@@ -1925,11 +1971,10 @@
         if (seq !== searchSequence) return;
         state.enToCa = enCa;
         state.caToEn = caEn;
-        const isCatalan = !!(state.wikt?.ca?.length);
-        renderBilingualBridge(word, enCa, caEn, isCatalan);
+        renderBilingualBridge(word, enCa, caEn, looksCatalan(state));
 
         const pron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
-        const caTarget = enCa?.responseData?.translatedText;
+        const caTarget = pickTranslation(enCa, word);
         renderPronunciationPills(pron, word, caTarget);
       });
 
@@ -1949,7 +1994,7 @@
           if (data) {
             renderDefinitionsGroup(state.freeDict, state.wikt, state.datamuse);
             const pron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
-            const caTarget = state.enToCa?.responseData?.translatedText;
+            const caTarget = pickTranslation(state.enToCa, word);
             renderPronunciationPills(pron, word, caTarget);
             renderEtymology(state.freeDict, state.wikt);
             updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
@@ -1961,11 +2006,10 @@
       if (seq !== searchSequence) return;
 
       // Final pass: ensure all components are fully synced
-      const isCatalanFinal = !!(state.wikt?.ca?.length);
-      renderBilingualBridge(word, state.enToCa, state.caToEn, isCatalanFinal);
+      renderBilingualBridge(word, state.enToCa, state.caToEn, looksCatalan(state));
       renderDefinitionsGroup(state.freeDict, state.wikt, state.datamuse);
       const finalPron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
-      const finalCaTarget = state.enToCa?.responseData?.translatedText;
+      const finalCaTarget = pickTranslation(state.enToCa, word);
       renderPronunciationPills(finalPron, word, finalCaTarget);
       updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
       renderEtymology(state.freeDict, state.wikt);
@@ -1973,47 +2017,128 @@
       currentWordData = { word, freeDictData: state.freeDict, wiktData: state.wikt };
     }
 
+    /**
+     * Is the SEARCHED word Catalan rather than English?
+     *
+     * "en.wiktionary has a Catalan section" is a different question, and using
+     * it as the answer flipped this card into the wrong direction for a long
+     * list of ordinary English words — hi, no, so, be, cap, part and molt all
+     * carry Catalan entries too. This is an English-first vocabulary tool, so
+     * any English evidence wins: someone typing "hi" means the greeting.
+     */
+    function looksCatalan(state) {
+      if (!state?.wikt?.ca?.length) return false;
+
+      // Free Dictionary is English-only, so an entry there settles it.
+      if (Array.isArray(state.freeDict) && state.freeDict.length) return false;
+
+      // The API files Translingual sections under "en" as well, so trust the
+      // language each section declares rather than the key it arrived under.
+      if ((state.wikt.en || []).some(sec => sec.language === 'English')) return false;
+
+      return true;
+    }
+
+    // MyMemory answers even when it has nothing useful, and its junk is
+    // distinctive: control strings from the service, translation-memory
+    // placeholders, and segments its own contributors scored zero.
+    const TRANSLATION_JUNK = /^(not\.?|n\/a|null|undefined|-+)$/i;
+    const TRANSLATION_WARNING = /MYMEMORY WARNING|NO QUERY SPECIFIED|INVALID LANGUAGE PAIR|QUERY LENGTH LIMIT|IS AN INVALID/i;
+    const MIN_TRANSLATION_QUALITY = 20;
+    const MIN_TRANSLATION_MATCH = 0.85;
+
+    function decodeEntities(str) {
+      const tpl = document.createElement('template');
+      tpl.innerHTML = String(str || '');
+      return tpl.content.textContent || '';
+    }
+
+    /**
+     * The best usable translation in a MyMemory response, or ''.
+     *
+     * responseData.translatedText on its own is not safe to display: asked for
+     * "hi" in Catalan-to-English it returns "Not." with match 0.97, while the
+     * segment that came from carries quality "0". The scored matches list is
+     * the honest signal, so read that first and only fall back to
+     * translatedText when there were no matches to judge.
+     */
+    function pickTranslation(payload, sourceWord) {
+      if (!payload || payload.responseStatus !== 200) return '';
+      const source = String(sourceWord || '').trim().toLowerCase();
+
+      const acceptable = raw => {
+        const original = String(raw || '');
+        // Placeholder junk from translation-memory tooling, e.g. _=-<ex id="_1"/>
+        if (/[<>]/.test(original)) return '';
+        const text = decodeEntities(original).replace(/\s+/g, ' ').trim();
+        if (!text || text.length > 120) return '';
+        if (/[<>{}]/.test(text)) return '';
+        if (TRANSLATION_JUNK.test(text)) return '';
+        if (TRANSLATION_WARNING.test(text)) return '';
+        if (text.toLowerCase() === source) return '';
+        return text;
+      };
+
+      const matches = Array.isArray(payload.matches) ? payload.matches : [];
+      const scored = matches
+        .map(m => ({
+          text: acceptable(m.translation),
+          quality: parseFloat(m.quality) || 0,
+          match: parseFloat(m.match) || 0,
+        }))
+        .filter(m => m.text && m.quality >= MIN_TRANSLATION_QUALITY && m.match >= MIN_TRANSLATION_MATCH)
+        .sort((a, b) => (b.quality - a.quality) || (b.match - a.match));
+
+      if (scored.length) return scored[0].text;
+
+      // Nothing scored survived. translatedText is only worth a look when there
+      // were no matches at all — if there were, it is simply one of the ones
+      // just rejected.
+      if (!matches.length) return acceptable(payload.responseData?.translatedText);
+      return '';
+    }
+
     function renderBilingualBridge(word, enToCa, caEn, isCatalan) {
       const bridge = $('bilingualBridge');
       if (!bridge) return;
 
-      const caText = enToCa?.responseData?.translatedText?.trim();
-      const enText = caEn?.responseData?.translatedText?.trim();
+      const source = String(word || '').trim();
+      const caText = pickTranslation(enToCa, source);
+      const enText = pickTranslation(caEn, source);
 
-      const hasCa = caText && caText.toLowerCase() !== word.toLowerCase();
-      const hasEn = enText && enText.toLowerCase() !== word.toLowerCase();
-
-      if (!hasCa && !hasEn && !caText && !enText) {
+      if (!caText && !enText) {
         bridge.style.display = 'none';
         return;
       }
 
-      let primaryLabel = '';
-      let primaryTrans = '';
+      let primaryLabel;
+      let primaryTrans;
       let secondaryTrans = '';
-      let targetLang = 'ca-ES';
+      let targetLang;
 
-      if (isCatalan && hasEn) {
+      if (isCatalan && enText) {
+        // The query itself is Catalan, so English is what the reader wants.
         primaryLabel = 'English Translation';
         primaryTrans = enText;
         targetLang = 'en-US';
-        if (hasCa && caText.toLowerCase() !== enText.toLowerCase()) {
+        if (caText && caText.toLowerCase() !== enText.toLowerCase()) {
           secondaryTrans = `Català: ${caText}`;
         }
-      } else if (hasCa) {
+      } else if (caText) {
         primaryLabel = 'Català';
         primaryTrans = caText;
         targetLang = 'ca-ES';
-        if (hasEn && enText.toLowerCase() !== word.toLowerCase() && enText.toLowerCase() !== caText.toLowerCase()) {
-          secondaryTrans = `Variant en anglès: ${enText}`;
-        }
-      } else if (hasEn) {
+        // No secondary here on purpose. The query is English, so the
+        // Catalan-to-English lookup is just the word coming back round the
+        // other way - and that reverse direction is where MyMemory's junk
+        // lives, which is how "hi" ended up captioned "Not.".
+      } else {
+        // Only the Catalan-to-English direction came back with anything usable.
+        // The old code left targetLang at 'ca-ES' here, so the 🔊 button read
+        // English text with a Catalan voice.
         primaryLabel = 'English Translation';
         primaryTrans = enText;
         targetLang = 'en-US';
-      } else {
-        primaryLabel = 'Català / English';
-        primaryTrans = caText || enText;
       }
 
       bridge.innerHTML = `
@@ -2023,10 +2148,10 @@
           ${secondaryTrans ? `<span class="bilingual-sub">· ${escHtml(secondaryTrans)}</span>` : ''}
         </div>
         <div class="bilingual-actions">
-          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(primaryTrans)}', '${targetLang}')" title="Listen to pronunciation">
+          <button class="audio-play-btn" data-speak="${escAttr(primaryTrans)}" data-lang="${escAttr(targetLang)}" title="Listen to pronunciation">
             🔊
           </button>
-          <button class="clickable-word-chip" onclick="searchWord('${escAttr(primaryTrans)}')" title="Lookup ${escAttr(primaryTrans)}">
+          <button class="clickable-word-chip" data-lookup="${escAttr(primaryTrans)}" title="Lookup ${escAttr(primaryTrans)}">
             Lookup “${escHtml(primaryTrans)}” ↗
           </button>
         </div>
@@ -2063,6 +2188,15 @@
     function setSpeechSpeed(speed) {
       currentSpeechRate = speed;
       $$('.speed-btn').forEach(btn => btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed));
+      try {
+        localStorage.setItem('vocab-speech-rate', String(speed));
+      } catch {
+        // Storage blocked; the choice just won't survive a reload.
+      }
+      // Synthesised clips are cached per rate, so the warmed ones no longer
+      // match. Fetch the new speed now rather than on the click that wants it.
+      stopAllAudio();
+      prefetchWordAudio(currentWord, lastCatalanTarget);
       showToast(`Pronunciation speed: ${speed}x`);
     }
 
@@ -2076,6 +2210,9 @@
       currentWord = word;
       searchSequence++;
       const seq = searchSequence;
+
+      // Whatever is playing belongs to the previous word.
+      stopAllAudio();
 
       document.body.className = 'has-results';
       location.hash = encodeURIComponent(word);
@@ -2169,7 +2306,7 @@
           <div class="accent-pill us-primary">
             <span class="flag-label">Pronunciation</span>
             <span class="ipa-text">${escHtml(pron.us.phonetic)}</span>
-            <button class="audio-play-btn" onclick="playAmericanAudio('${escAttr(pron.us.audio)}', '${escAttr(word)}')" title="Listen to pronunciation">
+            <button class="audio-play-btn" data-audio="${escAttr(pron.us.audio || '')}" data-speak="${escAttr(word)}" data-lang="en-US" title="Listen to pronunciation">
               🔊
             </button>
           </div>
@@ -2182,7 +2319,7 @@
           <div class="accent-pill uk-secondary">
             <span class="flag-label">UK</span>
             <span class="ipa-text">${escHtml(pron.uk.phonetic)}</span>
-            <button class="audio-play-btn" onclick="playAudioFile('${escAttr(pron.uk.audio || '')}', '${escAttr(word)}', 'en-GB')" title="Listen to UK pronunciation">
+            <button class="audio-play-btn" data-audio="${escAttr(pron.uk.audio || '')}" data-speak="${escAttr(word)}" data-lang="en-GB" title="Listen to UK pronunciation">
               🔊
             </button>
           </div>
@@ -2191,11 +2328,15 @@
 
       // 3. Catalan Pronunciation Pill
       const catWordToSpeak = caWord || word;
+      // Warm the two clips this card can play, so the click that follows is
+      // instant and the endpoint gets a chance to prove it is awake.
+      lastCatalanTarget = catWordToSpeak;
+      prefetchWordAudio(word, catWordToSpeak);
       html += `
         <div class="accent-pill" style="border-color: rgba(59, 130, 246, 0.3);">
           <span class="flag-label" style="color: #3b82f6;">Català</span>
           <span class="ipa-text">${escHtml(catWordToSpeak)}</span>
-          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(catWordToSpeak)}', 'ca-ES')" title="Listen to Catalan pronunciation">
+          <button class="audio-play-btn" data-speak="${escAttr(catWordToSpeak)}" data-lang="ca-ES" title="Listen to Catalan pronunciation">
             🔊
           </button>
         </div>
@@ -2205,62 +2346,462 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       AUDIO PLAYER & WEB SPEECH SYNTHESIS
+       AUDIO ENGINE
+       ───────────────────────────────────────────────────
+       Three sources of speech, best first:
+
+         1. A human recording of the exact word, when Free Dictionary has one.
+         2. Neural TTS (Microsoft Edge voices) from a shared synthesis endpoint.
+            It is the only source that reliably speaks Catalan at all — most
+            desktops ship no Catalan voice whatsoever.
+         3. The browser's own speechSynthesis. Always present, but its quality
+            and its language coverage differ on every machine.
+
+       Clips are cached as blobs and prefetched when a search resolves, so the
+       common case is a click that plays with no network wait. The endpoint is
+       a free-tier service that sleeps, so it must EARN each click: until it has
+       answered once in this session, clicks go straight to speechSynthesis
+       rather than hanging on a cold start.
     ═══════════════════════════════════════════════════ */
-    function playAmericanAudio(audioUrl, word) {
-      if (audioUrl) {
-        playAudioFile(audioUrl, word, 'en-US');
-      } else {
-        // High fidelity speech synthesis fallback
-        speakWebSpeech(word, 'en-US');
+
+    // Overridable at runtime with localStorage['vocab-tts-base'], which is how
+    // you point this at a local synthesis server without editing the file.
+    const NEURAL_TTS_DEFAULT = 'https://dictationapp.onrender.com/api/tts';
+
+    // Only the languages the upstream voice map actually covers. Asking it for
+    // en-GB would silently return an American voice, which is worse than
+    // useless on a pill labelled "UK".
+    const NEURAL_LANGS = new Set(['en-US', 'ca-ES']);
+
+    // Nobody is waiting on a prefetch, so give a sleeping service room to wake
+    // up rather than timing out and writing it off.
+    const NEURAL_PREFETCH_TIMEOUT = 45000;
+    const NEURAL_RETRY_AFTER = 30 * 60 * 1000;
+    const NEURAL_FAILURES_BEFORE_BLOCKING = 3;
+
+    // How many fetched clips to keep alive at once. A session only needs the
+    // word on screen and the handful behind it; every dropped entry must be
+    // revoked or the blob leaks.
+    const MAX_CLIPS = 24;
+
+    // Ranked by how natural they sound, best first. Matched as a substring of
+    // the voice name, because the exact naming differs per platform and
+    // per browser build.
+    const VOICE_PREFERENCES = {
+      'en-US': ['Google US English', 'Ava', 'Emma', 'Andrew', 'Samantha', 'Aria', 'Jenny', 'Zira', 'David'],
+      'en-GB': ['Google UK English Female', 'Libby', 'Sonia', 'Ryan', 'Daniel', 'Hazel', 'George'],
+      'ca-ES': ['Google català', 'Joana', 'Enric', 'Montserrat', 'Núria'],
+      'es-ES': ['Google español', 'Elvira', 'Alvaro', 'Mónica', 'Helena'],
+    };
+
+    // When a language has no voice at all, whose phonetics come closest.
+    // Catalan read by an English voice is unintelligible; read by a Spanish one
+    // it is merely accented.
+    const SPEECH_FALLBACK = { ca: 'es' };
+
+    const LANG_NAMES = { 'en-US': 'English', 'en-GB': 'British English', 'ca-ES': 'Catalan' };
+
+    let availableVoices = [];
+    let voicesPromise = null;
+    let activeAudio = null;
+    let activeButton = null;
+    let speechTicker = null;
+    let neuralReady = false;
+    let neuralFailures = 0;
+    // Persisted, so an endpoint that has gone away for good is not re-probed on
+    // every single page load for the rest of the week.
+    let neuralBlockedUntil = Number(localStorage.getItem('vocab-tts-blocked-until')) || 0;
+    const substitutionWarned = new Set();
+
+    // url -> blob: URL. Insertion order is eviction order.
+    const audioClips = new Map();
+    const clipsInFlight = new Set();
+
+    /* ── Voice list ──────────────────────────────────────
+       getVoices() is empty on the first call in a fresh tab and only fills in
+       once the engine has enumerated them, so reading it synchronously inside
+       a click means the FIRST word of every session gets the default voice.
+       This resolves once, early, and everything else reads the cached list. */
+    function loadVoices() {
+      if (voicesPromise) return voicesPromise;
+      voicesPromise = new Promise(resolve => {
+        if (!('speechSynthesis' in window)) return resolve([]);
+
+        const settle = () => {
+          availableVoices = window.speechSynthesis.getVoices() || [];
+          resolve(availableVoices);
+        };
+
+        const existing = window.speechSynthesis.getVoices() || [];
+        if (existing.length) {
+          availableVoices = existing;
+          return resolve(existing);
+        }
+        // Whichever comes first: the engine reporting in, or giving up on it.
+        window.speechSynthesis.addEventListener('voiceschanged', settle, { once: true });
+        setTimeout(settle, 2000);
+      });
+      return voicesPromise;
+    }
+
+    function normalizeLang(tag) {
+      return String(tag || '').replace(/_/g, '-').toLowerCase();
+    }
+
+    function pickVoice(lang) {
+      if (!availableVoices.length) return null;
+
+      const prefs = VOICE_PREFERENCES[lang] || [];
+      const rank = v => {
+        const idx = prefs.findIndex(p => v.name.toLowerCase().includes(p.toLowerCase()));
+        if (idx !== -1) return idx;
+        // Unlisted voices: the ones whose names advertise a modern engine still
+        // beat whatever generic voice the OS shipped in 2012.
+        return prefs.length + (/natural|neural|premium|enhanced|google/i.test(v.name) ? 0 : 1);
+      };
+      const best = list => list.slice().sort((a, b) => rank(a) - rank(b))[0];
+
+      const target = normalizeLang(lang);
+      const exact = availableVoices.filter(v => normalizeLang(v.lang) === target);
+      if (exact.length) return { voice: best(exact), substituted: false };
+
+      const base = target.split('-')[0];
+      const sameLanguage = availableVoices.filter(v => normalizeLang(v.lang).split('-')[0] === base);
+      if (sameLanguage.length) return { voice: best(sameLanguage), substituted: false };
+
+      const fallbackBase = SPEECH_FALLBACK[base];
+      if (fallbackBase) {
+        const alt = availableVoices.filter(v => normalizeLang(v.lang).split('-')[0] === fallbackBase);
+        if (alt.length) return { voice: best(alt), substituted: true };
+      }
+      return null;
+    }
+
+    /* ── Neural endpoint ─────────────────────────────── */
+    function neuralTtsBase() {
+      try {
+        const override = (localStorage.getItem('vocab-tts-base') || '').trim().replace(/\/+$/, '');
+        if (override) return override;
+      } catch {
+        // Storage blocked (private mode); the default is fine.
+      }
+      return NEURAL_TTS_DEFAULT;
+    }
+
+    function neuralUrl(text, lang, rate) {
+      return neuralTtsBase() +
+        '?text=' + encodeURIComponent(text) +
+        '&lang=' + encodeURIComponent(lang) +
+        '&rate=' + encodeURIComponent(rate);
+    }
+
+    function noteNeuralSuccess() {
+      neuralFailures = 0;
+      neuralReady = true;
+      if (neuralBlockedUntil) {
+        neuralBlockedUntil = 0;
+        try {
+          localStorage.removeItem('vocab-tts-blocked-until');
+        } catch {
+          // Storage blocked; the in-memory reset is enough for this session.
+        }
       }
     }
 
-    function playAudioFile(audioUrl, fallbackWord, langCode) {
-      if (currentlyPlayingAudio) {
-        currentlyPlayingAudio.pause();
-        currentlyPlayingAudio = null;
+    function noteNeuralFailure() {
+      if (neuralReady) return;
+      if (++neuralFailures < NEURAL_FAILURES_BEFORE_BLOCKING) return;
+      neuralBlockedUntil = Date.now() + NEURAL_RETRY_AFTER;
+      try {
+        localStorage.setItem('vocab-tts-blocked-until', String(neuralBlockedUntil));
+      } catch {
+        // Storage blocked; the block still holds for this session.
       }
+    }
 
-      if (!audioUrl) {
-        speakWebSpeech(fallbackWord, langCode || 'en-US');
+    function neuralAvailable(lang) {
+      return NEURAL_LANGS.has(lang) && Date.now() >= neuralBlockedUntil;
+    }
+
+    function rememberClip(url, blob) {
+      if (audioClips.has(url)) return;
+      // Caching is an optimisation, never a requirement: if blob URLs are
+      // unavailable the clip still plays straight from its address.
+      let objectUrl;
+      try {
+        objectUrl = URL.createObjectURL(blob);
+      } catch {
         return;
       }
-
-      try {
-        const audio = new Audio(audioUrl);
-        audio.playbackRate = currentSpeechRate;
-        currentlyPlayingAudio = audio;
-
-        audio.play().catch(err => {
-          console.warn('Audio playback error, falling back to Web Speech:', err);
-          speakWebSpeech(fallbackWord, langCode || 'en-US');
-        });
-      } catch {
-        speakWebSpeech(fallbackWord, langCode || 'en-US');
+      audioClips.set(url, objectUrl);
+      while (audioClips.size > MAX_CLIPS) {
+        const oldest = audioClips.keys().next();
+        if (oldest.done) break;
+        URL.revokeObjectURL(audioClips.get(oldest.value));
+        audioClips.delete(oldest.value);
       }
     }
 
-    function speakWebSpeech(word, langCode) {
+    /**
+     * Downloads a clip ahead of the click that will want it. Deliberately
+     * silent: a failure here only means the click falls back to speechSynthesis,
+     * and the user should never see a message about audio they did not ask for.
+     */
+    function prefetchClip(text, lang, rate) {
+      const clean = String(text || '').trim();
+      if (!clean || !neuralAvailable(lang)) return;
+
+      const url = neuralUrl(clean, lang, rate);
+      if (audioClips.has(url) || clipsInFlight.has(url)) return;
+
+      clipsInFlight.add(url);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), NEURAL_PREFETCH_TIMEOUT);
+
+      fetch(url, { signal: controller.signal })
+        .then(res => (res.ok ? res.blob() : null))
+        .then(blob => {
+          if (!blob || !blob.size) throw new Error('empty response');
+          // One successful answer is what promotes the endpoint from "might be
+          // asleep" to "safe to put in front of a click".
+          noteNeuralSuccess();
+          rememberClip(url, blob);
+        })
+        .catch(() => {
+          // One failure is a cold start or a flaky connection; several in a row
+          // is a service that is not coming back today. Either way
+          // speechSynthesis has been covering every click throughout.
+          noteNeuralFailure();
+        })
+        .finally(() => {
+          clearTimeout(timer);
+          clipsInFlight.delete(url);
+        });
+    }
+
+    /** Warms the clips a user is most likely to click, right after a search. */
+    function prefetchWordAudio(word, catalanWord) {
+      const rate = currentSpeechRate;
+      if (word) prefetchClip(word, 'en-US', rate);
+      if (catalanWord && catalanWord.toLowerCase() !== String(word || '').toLowerCase()) {
+        prefetchClip(catalanWord, 'ca-ES', rate);
+      }
+    }
+
+    /* ── Playback ────────────────────────────────────── */
+    function setAudioButtonState(btn, state) {
+      if (activeButton && activeButton !== btn) {
+        activeButton.classList.remove('playing', 'loading');
+      }
+      activeButton = state ? btn : null;
+      if (!btn) return;
+      btn.classList.toggle('playing', state === 'playing');
+      btn.classList.toggle('loading', state === 'loading');
+    }
+
+    /** The one place that silences everything, whichever source is running. */
+    function stopAllAudio() {
+      if (activeAudio) {
+        activeAudio.onended = null;
+        activeAudio.onerror = null;
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if (speechTicker) {
+        clearInterval(speechTicker);
+        speechTicker = null;
+      }
+      setAudioButtonState(null, null);
+    }
+
+    /**
+     * Plays a URL through an Audio element. Stays synchronous on purpose:
+     * awaiting a fetch first would move play() outside the user's click and
+     * risk tripping autoplay blocking, so a cache miss must behave exactly like
+     * having no cache at all.
+     *
+     * `resample` is for recorded human audio, which has no speed of its own to
+     * ask for. Synthesised clips are requested at the right rate upstream,
+     * where the engine adjusts prosody instead of just playing faster.
+     */
+    function playAudioUrl(url, { btn, resample = false, onFail } = {}) {
+      stopAllAudio();
+
+      const audio = new Audio(audioClips.get(url) || url);
+      if (resample) audio.playbackRate = currentSpeechRate;
+      activeAudio = audio;
+      setAudioButtonState(btn, 'loading');
+
+      const release = () => {
+        if (activeAudio !== audio) return false;
+        activeAudio = null;
+        setAudioButtonState(null, null);
+        return true;
+      };
+
+      audio.onplaying = () => {
+        if (activeAudio === audio) setAudioButtonState(btn, 'playing');
+      };
+      audio.onended = release;
+      audio.onerror = () => {
+        if (release() && onFail) onFail();
+      };
+      audio.play().catch(() => {
+        if (release() && onFail) onFail();
+      });
+    }
+
+    function speakWebSpeech(text, langCode, btn) {
+      const clean = String(text || '').trim();
+      if (!clean) return;
+
       if (!('speechSynthesis' in window)) {
         showToast('Speech synthesis is not supported on this browser.');
         return;
       }
 
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = langCode || 'en-US';
+      const lang = langCode || 'en-US';
+      const wasSpeaking = window.speechSynthesis.speaking || window.speechSynthesis.pending;
+      stopAllAudio();
+
+      const utterance = new SpeechSynthesisUtterance(clean);
+      const picked = pickVoice(lang);
+      if (picked) {
+        utterance.voice = picked.voice;
+        // Must match the voice, not the request: a Spanish voice told to speak
+        // ca-ES is a contradiction some engines resolve by refusing outright.
+        utterance.lang = picked.voice.lang || lang;
+        if (picked.substituted && !substitutionWarned.has(lang)) {
+          substitutionWarned.add(lang);
+          showToast(`No ${LANG_NAMES[lang] || lang} voice installed — using ${picked.voice.name}.`);
+        }
+      } else {
+        utterance.lang = lang;
+        // No voice for this language at all. The engine falls back to its
+        // default, which for Catalan means English phonetics on a Catalan word.
+        // Better to say so once than to pass that off as a pronunciation.
+        if (!lang.startsWith('en') && !substitutionWarned.has(lang)) {
+          substitutionWarned.add(lang);
+          showToast(`No ${LANG_NAMES[lang] || lang} voice installed on this device.`);
+        }
+      }
       utterance.rate = currentSpeechRate;
 
-      // Select high quality US voice if available
-      const voices = window.speechSynthesis.getVoices();
-      if (langCode === 'en-US') {
-        const usVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('David') || v.name.includes('Mark')));
-        if (usVoice) utterance.voice = usVoice;
+      utterance.onstart = () => {
+        setAudioButtonState(btn, 'playing');
+        // Chrome stops synthesising after ~15s. Irrelevant for a single word,
+        // so only pay for the workaround when the text is long enough to hit it.
+        if (clean.length > 100) {
+          speechTicker = setInterval(() => {
+            if (!window.speechSynthesis.speaking) {
+              clearInterval(speechTicker);
+              speechTicker = null;
+              return;
+            }
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
+          }, 10000);
+        }
+      };
+      const done = () => {
+        if (speechTicker) {
+          clearInterval(speechTicker);
+          speechTicker = null;
+        }
+        setAudioButtonState(null, null);
+      };
+      utterance.onend = done;
+      utterance.onerror = done;
+
+      setAudioButtonState(btn, 'loading');
+      // cancel() is asynchronous in Chrome, and speaking in the same tick as it
+      // can drop the utterance outright. A tick's delay is still well inside
+      // the user gesture as far as speechSynthesis is concerned.
+      if (wasSpeaking) {
+        setTimeout(() => window.speechSynthesis.speak(utterance), 60);
+      } else {
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    /**
+     * Says `text` in `lang` using the best source currently available.
+     * A click never waits on a sleeping endpoint: if the neural service has not
+     * proven itself yet this session, speechSynthesis answers immediately and
+     * the background prefetch upgrades the next click.
+     */
+    function speakText(text, langCode, btn) {
+      const clean = String(text || '').trim();
+      if (!clean) return;
+      const lang = langCode || 'en-US';
+      const rate = currentSpeechRate;
+
+      if (neuralAvailable(lang)) {
+        const url = neuralUrl(clean, lang, rate);
+        if (audioClips.has(url) || neuralReady) {
+          playAudioUrl(url, { btn, onFail: () => speakWebSpeech(clean, lang, btn) });
+          return;
+        }
+        prefetchClip(clean, lang, rate);
+      }
+      speakWebSpeech(clean, lang, btn);
+    }
+
+    /** A recorded human saying this exact word beats any synthesiser. */
+    function playWordAudio(recordedUrl, word, langCode, btn) {
+      const lang = langCode || 'en-US';
+      if (recordedUrl) {
+        playAudioUrl(recordedUrl, {
+          btn,
+          resample: true,
+          onFail: () => speakText(word, lang, btn),
+        });
+        return;
+      }
+      speakText(word, lang, btn);
+    }
+
+    /**
+     * One listener for every audio and lookup button on the page.
+     *
+     * These used to be inline onclick attributes built by string interpolation.
+     * That could not be made safe: the HTML parser decodes an attribute BEFORE
+     * the JS in it is parsed, so escaping an apostrophe to &#39; still produced
+     * speakText('l'aigua') — a syntax error, and a dead button on every Catalan
+     * word with an apostrophe in it. Data attributes have no such problem.
+     */
+    function handleDelegatedClick(e) {
+      const target = e.target;
+      if (!target || typeof target.closest !== 'function') return;
+      const el = target.closest('[data-speak], [data-audio], [data-lookup]');
+      if (!el) return;
+
+      const lookup = el.getAttribute('data-lookup');
+      if (lookup !== null) {
+        e.preventDefault();
+        if (el.hasAttribute('data-close-drawer')) {
+          $('drawerBackdrop').classList.remove('open');
+        }
+        searchWord(lookup);
+        return;
       }
 
-      window.speechSynthesis.speak(utterance);
-      showToast(`Playing pronunciation (${currentSpeechRate}x)`);
+      e.preventDefault();
+      const text = el.getAttribute('data-speak') || '';
+      const lang = el.getAttribute('data-lang') || 'en-US';
+
+      // Clicking the button that is already playing stops it.
+      if (activeButton === el) {
+        stopAllAudio();
+        return;
+      }
+
+      if (el.hasAttribute('data-audio')) {
+        playWordAudio(el.getAttribute('data-audio'), text, lang, el);
+      } else {
+        speakText(text, lang, el);
+      }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -2363,7 +2904,7 @@
               synsHtml = `
                 <div class="def-sub-synonyms">
                   <span class="sub-syn-label">Synonyms:</span>
-                  ${d.synonyms.slice(0, 6).map(s => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(s)}')">${escHtml(s)}</button>`).join('')}
+                  ${d.synonyms.slice(0, 6).map(s => `<button class="clickable-word-chip" data-lookup="${escAttr(s)}">${escHtml(s)}</button>`).join('')}
                 </div>
               `;
             }
@@ -2457,7 +2998,7 @@
       } else {
         html = `
           <div class="pos-block">
-            <p style="color: var(--muted); padding: 1rem 0;">No in-depth definitions found for “${escHtml(currentWord)}”. You can explore it via the external references tab.</p>
+            <p style="color: var(--muted); padding: 1rem 0;">No in-depth definitions found for “${escHtml(currentWord)}”. Try a different spelling, or search one of the related words above.</p>
           </div>
         `;
       }
@@ -2465,10 +3006,24 @@
       container.innerHTML = html;
     }
 
-    function highlightWordInText(text, word) {
-      if (!word) return text;
-      const regex = new RegExp(`\\b(${word}[a-z]*)\\b`, 'gi');
-      return text.replace(regex, '<strong style="color: var(--primary);">$1</strong>');
+    function highlightWordInText(html, word) {
+      const term = String(word || '').trim();
+      if (!term) return html;
+
+      // The term comes straight from the search box, so it has to be escaped
+      // before it becomes a pattern: "c++" was a SyntaxError that took the
+      // whole definitions render down with it.
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b(${escaped}[a-z]*)\\b`, 'gi');
+
+      // Only rewrite the text BETWEEN tags. Wiktionary examples arrive as
+      // HTML, and matching across the whole string rewrote the inside of href
+      // attributes too, so searching "high" corrupted every link containing it.
+      return html.replace(/<[^>]*>|[^<]+|</g, chunk =>
+        chunk.startsWith('<')
+          ? chunk
+          : chunk.replace(regex, '<strong style="color: var(--primary);">$1</strong>')
+      );
     }
 
     /* ═══════════════════════════════════════════════════
@@ -2485,7 +3040,7 @@
       card.style.display = 'flex';
       const chipClass = isAntonym ? 'clickable-word-chip antonym-chip' : 'clickable-word-chip';
       cloud.innerHTML = wordsList.slice(0, 14).map(w =>
-        `<button class="${chipClass}" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`
+        `<button class="${chipClass}" data-lookup="${escAttr(w)}">${escHtml(w)}</button>`
       ).join('');
     }
 
@@ -2623,7 +3178,7 @@
       }
 
       body.innerHTML = savedWords.map((item, idx) => `
-        <div class="bookmark-item" onclick="searchFromBookmark('${escAttr(item.word)}')">
+        <div class="bookmark-item" data-lookup="${escAttr(item.word)}" data-close-drawer="1">
           <div>
             <div class="bookmark-word">${escHtml(item.word)}</div>
             <div style="font-size: 0.75rem; color: var(--muted);">${escHtml(item.date || '')}</div>
@@ -2631,11 +3186,6 @@
           <button class="bookmark-remove-btn" onclick="removeSavedWord(event, ${idx})" title="Remove">✕</button>
         </div>
       `).join('');
-    }
-
-    function searchFromBookmark(word) {
-      $('drawerBackdrop').classList.remove('open');
-      searchWord(word);
     }
 
     function removeSavedWord(e, idx) {
@@ -2667,7 +3217,7 @@
 
       bar.innerHTML = `
         <span class="recent-label">Recent:</span>
-        ${recentSearches.map(w => `<span class="recent-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</span>`).join('')}
+        ${recentSearches.map(w => `<span class="recent-chip" data-lookup="${escAttr(w)}">${escHtml(w)}</span>`).join('')}
       `;
     }
 
@@ -2694,23 +3244,61 @@
       });
     }
 
+    // Wiktionary's REST API returns definition HTML whose links are relative to
+    // en.wiktionary.org — href="/wiki/elevated". Dropped into this page as-is
+    // they resolve against OUR origin instead, so every one of them became a
+    // 404 on the deployed site (audiophrases.github.io/wiki/elevated). Links
+    // are rebased onto Wiktionary here, and anything that will not rebase into
+    // a plain http(s) URL loses its anchor rather than pointing somewhere
+    // unexpected.
+    const WIKTIONARY_ORIGIN = 'https://en.wiktionary.org';
+
+    function safeExternalHref(raw) {
+      const href = String(raw || '').trim();
+      // A bare fragment targets a section of a page we are not displaying.
+      if (!href || href.startsWith('#')) return '';
+      try {
+        const url = new URL(href, WIKTIONARY_ORIGIN);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+        return url.href;
+      } catch {
+        return '';
+      }
+    }
+
     function sanitizeHtml(str) {
       if (!str) return '';
-      const div = document.createElement('div');
-      div.innerHTML = str;
-      div.querySelectorAll('script, style, iframe, object, embed, form, input').forEach(el => el.remove());
-      div.querySelectorAll('*').forEach(el => {
+      // A template's content is inert: unlike assigning to a live div, parsing
+      // here fetches no images and runs nothing.
+      const tpl = document.createElement('template');
+      tpl.innerHTML = String(str);
+
+      tpl.content
+        .querySelectorAll('script, style, iframe, object, embed, form, input, img, svg, link, meta, base')
+        .forEach(el => el.remove());
+
+      tpl.content.querySelectorAll('*').forEach(el => {
         [...el.attributes].forEach(a => {
-          if (a.name.startsWith('on') || a.name === 'style' || a.name === 'class') {
+          const name = a.name.toLowerCase();
+          if (name.startsWith('on') || ['style', 'class', 'src', 'srcset', 'formaction', 'xlink:href'].includes(name)) {
             el.removeAttribute(a.name);
           }
         });
+
         if (el.tagName === 'A') {
-          el.setAttribute('target', '_blank');
-          el.setAttribute('rel', 'noopener noreferrer');
+          const href = safeExternalHref(el.getAttribute('href'));
+          if (href) {
+            el.setAttribute('href', href);
+            el.setAttribute('target', '_blank');
+            el.setAttribute('rel', 'noopener noreferrer');
+          } else {
+            // Nothing safe to point at: keep the words, drop the link.
+            el.replaceWith(...el.childNodes);
+          }
         }
       });
-      return div.innerHTML;
+
+      return tpl.innerHTML;
     }
 
     // Launch App
