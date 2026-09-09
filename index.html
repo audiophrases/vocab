@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vocab — American English & Multilingual Dictionary Aggregator</title>
-  <meta name="description" content="Explore American English definitions, intuitive plain-English explanations, authentic audio pronunciations, real-world examples, synonyms, and embeddable free dictionaries.">
+  <title>Vocab — Dictionary & Vocabulary Aggregator</title>
+  <meta name="description" content="Explore clear definitions, intuitive explanations, authentic audio pronunciations, real-world examples, synonyms, and embeddable free dictionaries.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
@@ -271,21 +271,6 @@
 
     body.has-results .app-logo {
       font-size: 1.45rem;
-    }
-
-    .logo-badge {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: var(--primary-light);
-      color: var(--primary);
-      border: 1px solid var(--primary-border);
-      padding: 0.15rem 0.45rem;
-      border-radius: var(--radius-full);
-      vertical-align: middle;
-      -webkit-text-fill-color: var(--primary);
     }
 
     .app-tagline {
@@ -747,7 +732,7 @@
     }
 
     .accent-pill .flag-label {
-      font-weight: 800;
+      font-weight: 700;
       font-size: 0.78rem;
       display: flex;
       align-items: center;
@@ -1189,7 +1174,7 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       US REFERENCE DICTIONARIES GRID
+       REFERENCE DICTIONARIES GRID
     ═══════════════════════════════════════════════════ */
     .reference-section-card {
       background: var(--surface);
@@ -1581,15 +1566,15 @@
       <div class="header-content-wrapper">
         <div class="branding-box" onclick="goHome()">
           <div class="app-logo">
-            Vocab <span class="logo-badge">US English</span>
+            Vocab
           </div>
-          <p class="app-tagline">American English & Multilingual Dictionary Aggregator</p>
+          <p class="app-tagline">Search multiple dictionaries at once · Intuitive definitions & examples</p>
         </div>
 
         <div class="search-container">
           <form class="search-input-shell" id="searchForm" onsubmit="handleFormSubmit(event)">
             <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Search American English definition, word, or idiom…" autofocus autocomplete="off" spellcheck="false">
+            <input type="text" id="searchInput" placeholder="Search a word, phrase, or idiom…" autofocus autocomplete="off" spellcheck="false">
             <button type="button" class="clear-search-btn" id="clearSearchBtn" title="Clear input">✕</button>
             <button type="submit" class="search-submit-btn">Search</button>
           </form>
@@ -1597,13 +1582,13 @@
 
         <div class="mode-selector" id="modeTabs">
           <button type="button" class="mode-tab active" data-mode="en">
-            <span class="flag-icon">🇺🇸</span> English (US)
+            English
           </button>
           <button type="button" class="mode-tab" data-mode="ca">
-            <span class="flag-icon">🔵</span> Català
+            Català
           </button>
           <button type="button" class="mode-tab" data-mode="caen">
-            <span class="flag-icon">🔄</span> CA ↔ EN
+            CA ↔ EN
           </button>
         </div>
 
@@ -1632,7 +1617,7 @@
             📚 Free Dictionaries <span id="sourcesCounterBadge">(4)</span>
           </button>
           <button class="content-tab-btn" data-view="reference" onclick="switchView('reference')">
-            🇺🇸 American References
+            📖 Reference Dictionaries
           </button>
         </div>
 
@@ -1686,7 +1671,7 @@
           <!-- DEFINITIONS COLUMN -->
           <div class="definitions-column" id="definitionsContainer">
             <div class="loading-state-box">
-              <div class="spinner"></div> Loading comprehensive American English definitions…
+              <div class="spinner"></div> Loading definitions & examples…
             </div>
           </div>
 
@@ -1748,12 +1733,12 @@
         <div class="source-grid" id="sourcesGrid"></div>
       </div>
 
-      <!-- VIEW 3: AMERICAN REFERENCES -->
+      <!-- VIEW 3: REFERENCE DICTIONARIES -->
       <div class="reference-view" id="referenceView">
         <div class="reference-section-card">
           <div class="ref-header-row">
             <h2 class="ref-section-title" id="refSectionTitle">
-              🇺🇸 Authoritative American Dictionaries & Pronunciation References
+              📖 Reference Dictionaries & Pronunciation Guides
             </h2>
             <button class="ref-batch-btn" id="openAllRefsBtn" onclick="openAllReferences()">
               Open all in tabs ↗
@@ -1773,7 +1758,7 @@
         <a href="javascript:void(0)" onclick="searchWord('eloquent')">Eloquent</a>
         <a href="javascript:void(0)" onclick="searchWord('pragmatic')">Pragmatic</a>
       </div>
-      <p>Vocab · Prioritizing American English, Embeddable Free Dictionaries, and Intuitive Explanations</p>
+      <p>Vocab · Clear definitions, intuitive explanations & free dictionaries</p>
     </footer>
   </div>
 
@@ -1827,27 +1812,26 @@
 
     /* ═══════════════════════════════════════════════════
        DICTIONARY REFERENCE CONFIGURATION
-       (Prioritizing Authoritative American English)
     ═══════════════════════════════════════════════════ */
     const REFERENCES = {
       en: [
         {
           name: 'Merriam-Webster',
-          desc: 'America’s foremost, most trusted dictionary',
+          desc: 'Comprehensive collegiate dictionary',
           icon: '📕',
           url: w => 'https://www.merriam-webster.com/dictionary/' + enc(w),
           embeddable: false
         },
         {
-          name: 'American Heritage Dictionary',
-          desc: 'Definitive American English with Indo-European roots',
+          name: 'American Heritage',
+          desc: 'Contemporary dictionary & word origins',
           icon: '📘',
           url: w => 'https://www.ahdictionary.com/word/search.html?q=' + enc(w),
           embeddable: false
         },
         {
-          name: 'YouGlish (American)',
-          desc: 'Hear authentic American pronunciation in real YouTube clips',
+          name: 'YouGlish',
+          desc: 'Real-world video pronunciation clips',
           icon: '🎬',
           url: w => 'https://youglish.com/pronounce/' + enc(w) + '/english/us',
           embeddable: true,
@@ -1855,15 +1839,15 @@
         },
         {
           name: 'WordNet (Princeton)',
-          desc: 'Princeton University’s American lexical semantic network',
+          desc: 'Princeton University lexical semantic network',
           icon: '🏛️',
           url: w => 'http://wordnetweb.princeton.edu/perl/webwn?s=' + enc(w),
           embeddable: true,
           embedUrl: w => 'http://wordnetweb.princeton.edu/perl/webwn?s=' + enc(w)
         },
         {
-          name: 'Wiktionary (US & Global)',
-          desc: 'Free collaborative multilingual dictionary with full IPA',
+          name: 'Wiktionary',
+          desc: 'Free collaborative dictionary with full IPA',
           icon: '📖',
           url: w => 'https://en.wiktionary.org/wiki/' + enc(w),
           embeddable: true,
@@ -1877,15 +1861,15 @@
           embeddable: false
         },
         {
-          name: 'Online Etymology Dictionary',
+          name: 'Online Etymology',
           desc: 'History, origins, and morphological evolution',
           icon: '📜',
           url: w => 'https://www.etymonline.com/word/' + enc(w),
           embeddable: false
         },
         {
-          name: 'Cambridge (American)',
-          desc: 'Clear definitions tailored for American learners',
+          name: 'Cambridge',
+          desc: 'Clear definitions with audio & usage examples',
           icon: '📗',
           url: w => 'https://dictionary.cambridge.org/us/dictionary/english/' + enc(w),
           embeddable: false
@@ -2077,7 +2061,7 @@
       // Update placeholder
       const searchInput = $('searchInput');
       if (mode === 'en') {
-        searchInput.placeholder = 'Search American English definition, word, or idiom…';
+        searchInput.placeholder = 'Search a word, phrase, or idiom…';
       } else if (mode === 'ca') {
         searchInput.placeholder = 'Cerca una paraula o expressió en català…';
       } else {
@@ -2086,7 +2070,7 @@
 
       // Update reference section title
       if (mode === 'en') {
-        $('refSectionTitle').innerHTML = '🇺🇸 Authoritative American Dictionaries & Pronunciation References';
+        $('refSectionTitle').innerHTML = '📖 Reference Dictionaries & Pronunciation Guides';
       } else if (mode === 'ca') {
         $('refSectionTitle').innerHTML = '📘 Diccionaris i eines de referència en català';
       } else {
@@ -2343,13 +2327,13 @@
 
       return {
         us: {
-          label: '🇺🇸 American (US)',
+          label: 'Pronunciation',
           phonetic: usPhonetic || generalPhonetic || `/${word}/`,
           audio: usAudio,
           isAmerican: true
         },
         uk: {
-          label: '🇬🇧 British (UK)',
+          label: 'UK',
           phonetic: ukPhonetic || (ukAudio ? usPhonetic : ''),
           audio: ukAudio,
           isAmerican: false
@@ -2361,24 +2345,24 @@
       const container = $('pronunciationRow');
       let html = '';
 
-      // 1. Primary American English Pill
+      // 1. Primary Pronunciation Pill
       html += `
         <div class="accent-pill us-primary">
-          <span class="flag-label">🇺🇸 General American</span>
+          <span class="flag-label">Pronunciation</span>
           <span class="ipa-text">${escHtml(pron.us.phonetic)}</span>
-          <button class="audio-play-btn" onclick="playAmericanAudio('${escAttr(pron.us.audio)}', '${escAttr(word)}')" title="Listen to American pronunciation">
+          <button class="audio-play-btn" onclick="playAmericanAudio('${escAttr(pron.us.audio)}', '${escAttr(word)}')" title="Listen to pronunciation">
             🔊
           </button>
         </div>
       `;
 
-      // 2. Secondary British English Pill (if phonetic or audio exists)
+      // 2. Secondary UK Pronunciation Pill (if distinct)
       if (pron.uk.audio || (pron.uk.phonetic && pron.uk.phonetic !== pron.us.phonetic)) {
         html += `
           <div class="accent-pill uk-secondary">
-            <span class="flag-label">🇬🇧 British (RP)</span>
+            <span class="flag-label">UK</span>
             <span class="ipa-text">${escHtml(pron.uk.phonetic || pron.us.phonetic)}</span>
-            <button class="audio-play-btn" onclick="playAudioFile('${escAttr(pron.uk.audio || '')}', '${escAttr(word)}', 'en-GB')" title="Listen to British pronunciation">
+            <button class="audio-play-btn" onclick="playAudioFile('${escAttr(pron.uk.audio || '')}', '${escAttr(word)}', 'en-GB')" title="Listen to UK pronunciation">
               🔊
             </button>
           </div>
@@ -2389,7 +2373,7 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       AUDIO PLAYER & AMERICAN WEB SPEECH SYNTHESIS
+       AUDIO PLAYER & WEB SPEECH SYNTHESIS
     ═══════════════════════════════════════════════════ */
     function playAmericanAudio(audioUrl, word) {
       if (audioUrl) {
@@ -2444,7 +2428,7 @@
       }
 
       window.speechSynthesis.speak(utterance);
-      showToast(`Playing ${langCode === 'en-US' ? 'American' : 'British'} pronunciation (${currentSpeechRate}x)`);
+      showToast(`Playing pronunciation (${currentSpeechRate}x)`);
     }
 
     /* ═══════════════════════════════════════════════════
@@ -2457,7 +2441,7 @@
         if (firstSentence && firstSentence.length > 25 && firstSentence.length < 280) {
           return {
             text: firstSentence,
-            context: wiki.description ? `Context: ${wiki.description}` : 'General American usage'
+            context: wiki.description ? `Context: ${wiki.description}` : 'General usage'
           };
         }
       }
@@ -2483,7 +2467,7 @@
         if (parts.length === 2) {
           return {
             text: parts[1].trim(),
-            context: 'American Lexical Database'
+            context: 'Lexical Database'
           };
         }
       }
@@ -2615,7 +2599,7 @@
       } else {
         html = `
           <div class="pos-block">
-            <p style="color: var(--muted); padding: 1rem 0;">No in-depth definitions found for “${escHtml(currentWord)}”. You can explore it via the external American references tab.</p>
+            <p style="color: var(--muted); padding: 1rem 0;">No in-depth definitions found for “${escHtml(currentWord)}”. You can explore it via the external references tab.</p>
           </div>
         `;
       }
@@ -3090,7 +3074,7 @@
     function copyWordDefinition() {
       if (!currentWord) return;
       const explain = $('intuitiveText').textContent || '';
-      const textToCopy = `${currentWord}: ${explain} (via Vocab American English Aggregator)`;
+      const textToCopy = `${currentWord}: ${explain} (via Vocab)`;
       navigator.clipboard.writeText(textToCopy).then(() => {
         showToast(`Copied “${currentWord}” definition to clipboard!`);
       }).catch(() => {
