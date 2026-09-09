@@ -1990,6 +1990,13 @@
       handleHashChange();
       window.addEventListener('hashchange', handleHashChange);
 
+      if (!location.hash.slice(1)) {
+        const defaultWord = (getRecentSearches()[0]?.word) || 'pragmatic';
+        $('searchInput').value = defaultWord;
+        $('clearSearchBtn').style.display = 'block';
+        doSearch(defaultWord);
+      }
+
       // Search input clear button visibility
       const searchInput = $('searchInput');
       const clearBtn = $('clearSearchBtn');
@@ -2097,6 +2104,163 @@
     /* ═══════════════════════════════════════════════════
        THEME CONTROLLER
     ═══════════════════════════════════════════════════ */
+    function fetchJsonWithTimeout(url, timeoutMs = 2800) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { signal: controller.signal })
+        .then(async r => {
+          clearTimeout(timer);
+          if (!r.ok) return null;
+          try {
+            return await r.json();
+          } catch {
+            return null;
+          }
+        })
+        .catch(() => {
+          clearTimeout(timer);
+          return null;
+        });
+    }
+
+    async function executeEnglishAggregation(word, seq) {
+      let state = {
+        freeDict: null,
+        wikt: null,
+        datamuse: null,
+        synonyms: [],
+        antonyms: [],
+        related: [],
+        rhymes: [],
+        collocations: [],
+        wiki: null
+      };
+
+      // 1. Wiktionary Task (High speed & high uptime dictionary definitions & examples)
+      const wiktTask = fetchJsonWithTimeout('https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word), 3200)
+        .then(data => {
+          if (seq !== searchSequence) return;
+          state.wikt = data;
+          renderWiktionaryCard(word, data);
+          // If Free Dictionary hasn't loaded yet, show Wiktionary definitions immediately
+          if (!state.freeDict) {
+            renderDefinitionsGroup(null, state.wikt, state.datamuse);
+            const pron = extractAmericanAndBritishPronunciation(word, null, state.wikt);
+            renderPronunciationPills(pron, word);
+            updateIntuitiveBox(word, null, state.datamuse, state.wiki, state.wikt);
+          }
+        });
+
+      // 2. Datamuse Task (Syllables, frequency, semantic associations, rhymes)
+      const dmTasks = Promise.all([
+        fetchJsonWithTimeout('https://api.datamuse.com/words?sp=' + encodeURIComponent(word) + '&md=dpsf&max=1', 3000),
+        fetchJsonWithTimeout('https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(word) + '&max=16', 3000),
+        fetchJsonWithTimeout('https://api.datamuse.com/words?rel_ant=' + encodeURIComponent(word) + '&max=12', 3000),
+        fetchJsonWithTimeout('https://api.datamuse.com/words?ml=' + encodeURIComponent(word) + '&max=14', 3000),
+        fetchJsonWithTimeout('https://api.datamuse.com/words?rel_rhy=' + encodeURIComponent(word) + '&max=12', 3000),
+        fetchJsonWithTimeout('https://api.datamuse.com/words?rel_trg=' + encodeURIComponent(word) + '&max=12', 3000),
+      ]).then(([dmWord, dmSyn, dmAnt, dmRel, dmRhy, dmCol]) => {
+        if (seq !== searchSequence) return;
+        state.datamuse = (dmWord && dmWord[0]) || null;
+        state.synonyms = (dmSyn || []).map(x => x.word);
+        state.antonyms = (dmAnt || []).map(x => x.word);
+        state.related = (dmRel || []).map(x => x.word);
+        state.rhymes = (dmRhy || []).map(x => x.word);
+        state.collocations = (dmCol || []).map(x => x.word);
+
+        renderDatamuseCard(word, {
+          datamuseData: state.datamuse,
+          synonymsList: state.synonyms,
+          relatedList: state.related
+        });
+
+        // Update Syllables & Frequency on Hero
+        if (state.datamuse) {
+          if (state.datamuse.numSyllables) {
+            $('heroSyllables').textContent = `· ${state.datamuse.numSyllables} syllable${state.datamuse.numSyllables > 1 ? 's' : ''}`;
+          }
+          if (state.datamuse.tags) {
+            const freqTag = state.datamuse.tags.find(t => t.startsWith('f:'));
+            if (freqTag) {
+              const freqVal = parseFloat(freqTag.replace('f:', ''));
+              const badge = $('heroFrequency');
+              badge.style.display = 'inline-block';
+              if (freqVal > 15) badge.textContent = 'Very Common';
+              else if (freqVal > 2) badge.textContent = 'Common Vocabulary';
+              else badge.textContent = 'Advanced / Literary';
+            }
+          }
+        }
+
+        // Render Sidebar Brain Cards
+        renderWordChipsCloud('synonymsCard', 'synonymsCloud', mergeUnique(extractFreeDictSynonyms(state.freeDict), state.synonyms), false);
+        renderWordChipsCloud('antonymsCard', 'antonymsCloud', mergeUnique(extractFreeDictAntonyms(state.freeDict), state.antonyms), true);
+        renderWordChipsCloud('relatedCard', 'relatedCloud', state.related, false);
+        renderWordChipsCloud('rhymesCard', 'rhymesCloud', state.rhymes, false);
+        renderWordChipsCloud('collocationsCard', 'collocationsCloud', state.collocations, false);
+      });
+
+      // 3. Wikipedia Summary Task (Fast encyclopedic context)
+      const wikiTask = fetchJsonWithTimeout('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(word), 2500)
+        .then(data => {
+          if (seq !== searchSequence) return;
+          state.wiki = data;
+          renderWikipediaCard(word, data);
+          updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
+        });
+
+      // 4. Free Dictionary API (Strict timeout: 2600ms to prevent hanging on Cloudflare 522)
+      const freeDictTask = fetchJsonWithTimeout('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word), 2600)
+        .then(data => {
+          if (seq !== searchSequence) return;
+          state.freeDict = data;
+          renderFreeDictCard(word, data, state.wikt);
+          if (data) {
+            renderDefinitionsGroup(state.freeDict, state.wikt, state.datamuse);
+            const pron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
+            renderPronunciationPills(pron, word);
+            renderEtymology(state.freeDict, state.wikt);
+            updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
+          }
+        })
+        .catch(() => {
+          if (seq !== searchSequence) return;
+          renderFreeDictCard(word, null, state.wikt);
+        });
+
+      // Await all tasks to settle
+      await Promise.allSettled([wiktTask, dmTasks, wikiTask, freeDictTask]);
+      if (seq !== searchSequence) return;
+
+      // Final pass: ensure all components are fully synced
+      renderDefinitionsGroup(state.freeDict, state.wikt, state.datamuse);
+      const finalPron = extractAmericanAndBritishPronunciation(word, state.freeDict, state.wikt);
+      renderPronunciationPills(finalPron, word);
+      updateIntuitiveBox(word, state.freeDict, state.datamuse, state.wiki, state.wikt);
+      renderEtymology(state.freeDict, state.wikt);
+
+      // Finalize source cards
+      renderFreeDictCard(word, state.freeDict, state.wikt);
+      renderWiktionaryCard(word, state.wikt);
+      renderDatamuseCard(word, {
+        datamuseData: state.datamuse,
+        synonymsList: state.synonyms,
+        relatedList: state.related
+      });
+      renderWikipediaCard(word, state.wiki);
+
+      currentWordData = { word, freeDictData: state.freeDict, wiktData: state.wikt };
+    }
+
+    function updateIntuitiveBox(word, freeDict, datamuse, wiki, wikt) {
+      const intuitiveExplanation = generateIntuitiveExplanation(word, freeDict, datamuse, wiki, wikt);
+      if (intuitiveExplanation) {
+        $('intuitiveText').textContent = intuitiveExplanation.text;
+        $('intuitiveContext').textContent = intuitiveExplanation.context || '';
+        $('intuitiveBox').style.display = 'flex';
+      }
+    }
+
     function initTheme() {
       const savedTheme = localStorage.getItem('vocab-theme');
       if (savedTheme) {
@@ -2176,115 +2340,9 @@
     }
 
     /* ═══════════════════════════════════════════════════
-       ENGLISH AGGREGATION & AMERICAN PRIORITIZATION
-    ═══════════════════════════════════════════════════ */
-    async function executeEnglishAggregation(word, seq) {
-      // Parallel fetch from all free APIs
-      const [freeDictRes, datamuseWordRes, datamuseSynRes, datamuseAntRes, datamuseRelRes, datamuseRhyRes, datamuseColRes, wiktionaryRes, wikiSummaryRes] = await Promise.allSettled([
-        // 1. Free Dictionary API (rich phonetics, US audio, parts of speech, examples)
-        fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
-
-        // 2. Datamuse Base (syllables, tags, frequency, definitions)
-        fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(word) + '&md=dpsf&max=1').then(r => r.ok ? r.json() : null).catch(() => null),
-
-        // 3. Datamuse Synonyms
-        fetch('https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(word) + '&max=16').then(r => r.ok ? r.json() : []).catch(() => []),
-
-        // 4. Datamuse Antonyms
-        fetch('https://api.datamuse.com/words?rel_ant=' + encodeURIComponent(word) + '&max=12').then(r => r.ok ? r.json() : []).catch(() => []),
-
-        // 5. Datamuse Means Like (Semantic associations)
-        fetch('https://api.datamuse.com/words?ml=' + encodeURIComponent(word) + '&max=14').then(r => r.ok ? r.json() : []).catch(() => []),
-
-        // 6. Datamuse Rhymes
-        fetch('https://api.datamuse.com/words?rel_rhy=' + encodeURIComponent(word) + '&max=12').then(r => r.ok ? r.json() : []).catch(() => []),
-
-        // 7. Datamuse Collocations / Words frequently modifying or following
-        fetch('https://api.datamuse.com/words?rel_trg=' + encodeURIComponent(word) + '&max=12').then(r => r.ok ? r.json() : []).catch(() => []),
-
-        // 8. Wiktionary REST API (Definitions, etymology)
-        fetch('https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
-
-        // 9. Wikipedia Summary API (Intuitive Encyclopedic Context)
-        fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
-      ]);
-
-      if (seq !== searchSequence) return;
-
-      const freeDictData = freeDictRes.value;
-      const datamuseData = (datamuseWordRes.value && datamuseWordRes.value[0]) || null;
-      const synonymsList = (datamuseSynRes.value || []).map(x => x.word);
-      const antonymsList = (datamuseAntRes.value || []).map(x => x.word);
-      const relatedList = (datamuseRelRes.value || []).map(x => x.word);
-      const rhymesList = (datamuseRhyRes.value || []).map(x => x.word);
-      const collocationsList = (datamuseColRes.value || []).map(x => x.word);
-      const wiktData = wiktionaryRes.value;
-      const wikiSummary = wikiSummaryRes.value;
-
-      // Extract Pronunciations: STRICT AMERICAN ENGLISH PRIORITIZATION
-      const pronunciations = extractAmericanAndBritishPronunciation(word, freeDictData);
-      renderPronunciationPills(pronunciations, word);
-
-      // Syllables & Frequency
-      if (datamuseData) {
-        if (datamuseData.numSyllables) {
-          $('heroSyllables').textContent = `· ${datamuseData.numSyllables} syllable${datamuseData.numSyllables > 1 ? 's' : ''}`;
-        }
-        if (datamuseData.tags) {
-          const freqTag = datamuseData.tags.find(t => t.startsWith('f:'));
-          if (freqTag) {
-            const freqVal = parseFloat(freqTag.replace('f:', ''));
-            const badge = $('heroFrequency');
-            badge.style.display = 'inline-block';
-            if (freqVal > 15) {
-              badge.textContent = 'Very Common';
-            } else if (freqVal > 2) {
-              badge.textContent = 'Common Vocabulary';
-            } else {
-              badge.textContent = 'Advanced / Literary';
-            }
-          }
-        }
-      }
-
-      // Synthesize Intuitive Explanation
-      const intuitiveExplanation = generateIntuitiveExplanation(word, freeDictData, datamuseData, wikiSummary);
-      if (intuitiveExplanation) {
-        $('intuitiveText').textContent = intuitiveExplanation.text;
-        $('intuitiveContext').textContent = intuitiveExplanation.context || '';
-        $('intuitiveBox').style.display = 'flex';
-      } else {
-        $('intuitiveBox').style.display = 'none';
-      }
-
-      // Render Synthesized Definitions
-      renderDefinitionsGroup(freeDictData, wiktData, datamuseData);
-
-      // Render Sidebar Brain Cards
-      renderWordChipsCloud('synonymsCard', 'synonymsCloud', mergeUnique(extractFreeDictSynonyms(freeDictData), synonymsList), false);
-      renderWordChipsCloud('antonymsCard', 'antonymsCloud', mergeUnique(extractFreeDictAntonyms(freeDictData), antonymsList), true);
-      renderWordChipsCloud('relatedCard', 'relatedCloud', relatedList, false);
-      renderWordChipsCloud('rhymesCard', 'rhymesCloud', rhymesList, false);
-      renderWordChipsCloud('collocationsCard', 'collocationsCloud', collocationsList, false);
-
-      // Etymology
-      renderEtymology(freeDictData, wiktData);
-
-      // Render Individual Free Sources Cards Tab
-      renderSourcesCardsTab(word, {
-        freeDict: freeDictData,
-        wiktionary: wiktData,
-        datamuse: { datamuseData, synonymsList, antonymsList, relatedList, rhymesList },
-        wikipedia: wikiSummary
-      });
-
-      currentWordData = { word, freeDictData, intuitiveExplanation };
-    }
-
-    /* ═══════════════════════════════════════════════════
        AMERICAN ENGLISH PRONUNCIATION EXTRACTOR
     ═══════════════════════════════════════════════════ */
-    function extractAmericanAndBritishPronunciation(word, freeDict) {
+    function extractAmericanAndBritishPronunciation(word, freeDict, wikt) {
       let usPhonetic = '';
       let usAudio = '';
       let ukPhonetic = '';
@@ -2361,7 +2419,7 @@
         html += `
           <div class="accent-pill uk-secondary">
             <span class="flag-label">UK</span>
-            <span class="ipa-text">${escHtml(pron.uk.phonetic || pron.us.phonetic)}</span>
+            <span class="ipa-text">${escHtml(pron.uk.phonetic || pron.uk.phonetic)}</span>
             <button class="audio-play-btn" onclick="playAudioFile('${escAttr(pron.uk.audio || '')}', '${escAttr(word)}', 'en-GB')" title="Listen to UK pronunciation">
               🔊
             </button>
@@ -2434,7 +2492,7 @@
     /* ═══════════════════════════════════════════════════
        INTUITIVE EXPLANATION GENERATOR
     ═══════════════════════════════════════════════════ */
-    function generateIntuitiveExplanation(word, freeDict, datamuse, wiki) {
+    function generateIntuitiveExplanation(word, freeDict, datamuse, wiki, wikt) {
       // 1. Check if Wikipedia summary has a clean sentence
       if (wiki && wiki.extract && !wiki.extract.includes('may refer to:')) {
         const firstSentence = wiki.extract.split(/(?<=[.?!])\s+/)[0];
@@ -2460,7 +2518,25 @@
         }
       }
 
-      // 3. Datamuse definitions
+      // 3. Check Wiktionary definitions
+      if (wikt && wikt.en && wikt.en.length) {
+        for (const sec of wikt.en) {
+          if (sec.definitions && sec.definitions.length) {
+            const raw = sec.definitions[0].definition;
+            const tmp = document.createElement('div');
+            tmp.innerHTML = raw;
+            const plain = tmp.textContent.trim().replace(/^(\(.*\)|\[.*\])\s*/, '');
+            if (plain) {
+              return {
+                text: plain,
+                context: `Part of Speech: ${(sec.partOfSpeech || '').toUpperCase()}`
+              };
+            }
+          }
+        }
+      }
+
+      // 4. Datamuse definitions
       if (datamuse && datamuse.defs?.length) {
         const rawDef = datamuse.defs[0];
         const parts = rawDef.split('\t');
@@ -2536,7 +2612,7 @@
           `;
         }
       } else if (wikt && wikt.en && wikt.en.length) {
-        // Fallback to Wiktionary entries
+        // Render Wiktionary entries
         for (const section of wikt.en) {
           const pos = (section.partOfSpeech || 'definition').toLowerCase();
           const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
@@ -2552,11 +2628,19 @@
           `;
 
           definitions.forEach((d, idx) => {
+            let exampleHtml = '';
+            const examples = d.examples || (d.parsedExamples && d.parsedExamples.map(p => p.example)) || [];
+            if (examples.length) {
+              const cleanEx = sanitizeHtml(examples[0]);
+              exampleHtml = `<div class="def-example-quote">“${highlightWordInText(cleanEx, currentWord)}”</div>`;
+            }
+
             html += `
               <div class="def-item">
                 <div class="def-num">${idx + 1}</div>
                 <div class="def-body">
                   <div class="def-meaning">${sanitizeHtml(d.definition)}</div>
+                  ${exampleHtml}
                 </div>
               </div>
             `;
@@ -2682,152 +2766,249 @@
     function renderSourcePlaceholders(word) {
       const grid = $('sourcesGrid');
       const sources = [
-        { name: 'Free Dictionary API', icon: '📘' },
-        { name: 'Wiktionary (Multilingual)', icon: '📖' },
-        { name: 'Datamuse Lexical Engine', icon: '🧠' },
-        { name: 'Wikipedia Knowledge Summary', icon: '🌐' }
+        { id: 'srcCard-freedict', name: 'Free Dictionary API', icon: '📘', domain: 'api.dictionaryapi.dev' },
+        { id: 'srcCard-wiktionary', name: 'Wiktionary', icon: '📖', domain: 'en.wiktionary.org' },
+        { id: 'srcCard-datamuse', name: 'Datamuse Lexical Engine', icon: '🧠', domain: 'api.datamuse.com' },
+        { id: 'srcCard-wikipedia', name: 'Wikipedia Knowledge Summary', icon: '🌐', domain: 'en.wikipedia.org' }
       ];
 
       grid.innerHTML = sources.map(s => `
-        <div class="source-card">
+        <div class="source-card" id="${s.id}">
           <div class="source-card-head">
             <div class="source-card-identity">
               <span class="source-card-icon">${s.icon}</span>
               <span class="source-card-title">${s.name}</span>
             </div>
-            <span class="source-status-badge">Loading…</span>
+            <span class="source-status-badge">Connecting…</span>
           </div>
           <div class="source-card-body">
             <div class="loading-state-box"><div class="spinner"></div> Fetching source data…</div>
+          </div>
+          <div class="source-card-foot">
+            <span style="font-size: 0.75rem; color: var(--muted);">${s.domain}</span>
+            <span style="font-size: 0.75rem; color: var(--muted);">Waiting…</span>
           </div>
         </div>
       `).join('');
     }
 
-    function renderSourcesCardsTab(word, data) {
-      const grid = $('sourcesGrid');
-      let cardsHtml = '';
+    function renderFreeDictCard(word, freeDict, wikt) {
+      const card = $('srcCard-freedict');
+      if (!card) return;
 
-      // 1. Free Dictionary Card
-      const fd = data.freeDict && data.freeDict[0];
-      cardsHtml += `
-        <div class="source-card">
+      if (freeDict && freeDict[0]) {
+        const entry = freeDict[0];
+        const meanings = entry.meanings || [];
+        card.innerHTML = `
           <div class="source-card-head">
             <div class="source-card-identity">
               <span class="source-card-icon">📘</span>
               <span class="source-card-title">Free Dictionary API</span>
             </div>
-            <span class="source-status-badge ${fd ? 'live' : ''}">${fd ? 'Live Data' : 'No result'}</span>
+            <span class="source-status-badge live">Live Data</span>
           </div>
           <div class="source-card-body">
-            ${fd ? `
-              <div>
-                <strong>Phonetic:</strong> ${escHtml(fd.phonetic || (fd.phonetics && fd.phonetics[0]?.text) || '—')}
-              </div>
-              <div>
-                ${(fd.meanings || []).slice(0, 3).map(m => `
-                  <div style="margin-top: 0.5rem;">
-                    <span class="pos-badge ${m.partOfSpeech}">${escHtml(m.partOfSpeech)}</span>
-                    <p style="font-size: 0.9rem; margin-top: 0.2rem;">${escHtml(m.definitions[0]?.definition || '')}</p>
+            <div>
+              ${meanings.slice(0, 3).map(m => {
+                const pos = (m.partOfSpeech || 'definition').toLowerCase();
+                const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
+                const firstDef = m.definitions?.[0];
+                return `
+                  <div style="margin-top: 0.55rem;">
+                    <span class="pos-badge ${badgeClass}">${escHtml(pos)}</span>
+                    <div style="font-size: 0.88rem; margin-top: 0.25rem; line-height: 1.45;">${escHtml(firstDef?.definition || '')}</div>
+                    ${firstDef?.example ? `<div class="def-example-quote" style="margin-top: 0.35rem; font-size: 0.82rem;">“${escHtml(firstDef.example)}”</div>` : ''}
                   </div>
-                `).join('')}
-              </div>
-            ` : '<p style="color: var(--muted);">No entry found.</p>'}
+                `;
+              }).join('')}
+            </div>
           </div>
           <div class="source-card-foot">
             <span style="font-size: 0.75rem; color: var(--muted);">api.dictionaryapi.dev</span>
             <a class="source-ext-link" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Docs ↗</a>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">📘</span>
+              <span class="source-card-title">Free Dictionary API</span>
+            </div>
+            <span class="source-status-badge" style="background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.25);">Server Offline / Timed Out</span>
+          </div>
+          <div class="source-card-body">
+            <p style="font-size: 0.84rem; line-height: 1.45; color: var(--muted); margin-bottom: 0.6rem;">
+              The public <code>api.dictionaryapi.dev</code> server did not respond or timed out.
+            </p>
+            <div style="background: var(--surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+              ✨ <strong>Vocab Fallback Active:</strong> Full definitions, usage examples, and pronunciation are seamlessly powered by <strong>Wiktionary</strong> and <strong>Datamuse</strong>.
+            </div>
+          </div>
+          <div class="source-card-foot">
+            <span style="font-size: 0.75rem; color: var(--muted);">api.dictionaryapi.dev</span>
+            <a class="source-ext-link" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Status ↗</a>
+          </div>
+        `;
+      }
+    }
 
-      // 2. Wiktionary Card
-      const wikt = data.wiktionary;
-      cardsHtml += `
-        <div class="source-card">
+    function renderWiktionaryCard(word, wikt) {
+      const card = $('srcCard-wiktionary');
+      if (!card) return;
+
+      const entries = wikt && (wikt.en || wikt.ca);
+      if (entries && entries.length) {
+        card.innerHTML = `
           <div class="source-card-head">
             <div class="source-card-identity">
               <span class="source-card-icon">📖</span>
               <span class="source-card-title">Wiktionary REST API</span>
             </div>
-            <span class="source-status-badge ${wikt && wikt.en ? 'live' : ''}">${wikt && wikt.en ? 'Live Data' : 'No result'}</span>
+            <span class="source-status-badge live">Live Data</span>
           </div>
           <div class="source-card-body">
-            ${wikt && wikt.en ? `
-              <div>
-                ${wikt.en.slice(0, 3).map(sec => `
-                  <div style="margin-top: 0.5rem;">
-                    <span class="pos-badge other">${escHtml(sec.partOfSpeech)}</span>
-                    <div style="font-size: 0.9rem; margin-top: 0.2rem;">${sanitizeHtml(sec.definitions[0]?.definition || '')}</div>
+            <div>
+              ${entries.slice(0, 3).map(sec => {
+                const pos = (sec.partOfSpeech || 'definition').toLowerCase();
+                const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
+                const firstDef = sec.definitions?.[0];
+                const defText = firstDef?.definition || '';
+                const ex = firstDef?.examples?.[0] || '';
+                return `
+                  <div style="margin-top: 0.55rem;">
+                    <span class="pos-badge ${badgeClass}">${escHtml(pos)}</span>
+                    <div style="font-size: 0.88rem; margin-top: 0.25rem; line-height: 1.45;">${sanitizeHtml(defText)}</div>
+                    ${ex ? `<div class="def-example-quote" style="margin-top: 0.35rem; font-size: 0.82rem;">“${sanitizeHtml(ex)}”</div>` : ''}
                   </div>
-                `).join('')}
-              </div>
-            ` : '<p style="color: var(--muted);">No Wiktionary entry found.</p>'}
+                `;
+              }).join('')}
+            </div>
           </div>
           <div class="source-card-foot">
             <button class="ref-batch-btn" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="openInAppEmbed('https://en.m.wiktionary.org/wiki/${enc(word)}', 'Wiktionary Mobile — ${escAttr(word)}')">Preview Embed 📱</button>
             <a class="source-ext-link" href="https://en.wiktionary.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Open Wiki ↗</a>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">📖</span>
+              <span class="source-card-title">Wiktionary REST API</span>
+            </div>
+            <span class="source-status-badge">No entry</span>
+          </div>
+          <div class="source-card-body">
+            <p style="font-size: 0.84rem; color: var(--muted);">No matching Wiktionary entry found for “${escHtml(word)}”.</p>
+          </div>
+          <div class="source-card-foot">
+            <a class="source-ext-link" href="https://en.wiktionary.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Search Wiktionary ↗</a>
+          </div>
+        `;
+      }
+    }
 
-      // 3. Datamuse Card
-      const dm = data.datamuse;
-      cardsHtml += `
-        <div class="source-card">
+    function renderDatamuseCard(word, dm) {
+      const card = $('srcCard-datamuse');
+      if (!card) return;
+
+      const hasData = dm && ((dm.synonymsList && dm.synonymsList.length) || (dm.relatedList && dm.relatedList.length) || dm.datamuseData);
+      if (hasData) {
+        card.innerHTML = `
           <div class="source-card-head">
             <div class="source-card-identity">
               <span class="source-card-icon">🧠</span>
               <span class="source-card-title">Datamuse Lexical Engine</span>
             </div>
-            <span class="source-status-badge ${dm && (dm.synonymsList.length || dm.relatedList.length) ? 'live' : ''}">Live Data</span>
+            <span class="source-status-badge live">Live Data</span>
           </div>
           <div class="source-card-body">
-            <div>
-              <span class="sub-syn-label">Synonyms (${dm.synonymsList.length}):</span>
-              <div class="chips-cloud" style="margin-top: 0.3rem;">
-                ${dm.synonymsList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
+            ${dm.synonymsList && dm.synonymsList.length ? `
+              <div>
+                <span class="sub-syn-label">Synonyms (${dm.synonymsList.length}):</span>
+                <div class="chips-cloud" style="margin-top: 0.35rem;">
+                  ${dm.synonymsList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
+                </div>
               </div>
-            </div>
-            <div style="margin-top: 0.5rem;">
-              <span class="sub-syn-label">Related Concepts:</span>
-              <div class="chips-cloud" style="margin-top: 0.3rem;">
-                ${dm.relatedList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
+            ` : ''}
+            ${dm.relatedList && dm.relatedList.length ? `
+              <div style="margin-top: 0.6rem;">
+                <span class="sub-syn-label">Related Concepts:</span>
+                <div class="chips-cloud" style="margin-top: 0.35rem;">
+                  ${dm.relatedList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
+                </div>
               </div>
-            </div>
+            ` : ''}
+            ${dm.datamuseData?.defs?.length ? `
+              <div style="margin-top: 0.6rem; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
+                ${escHtml(dm.datamuseData.defs[0].replace(/^[a-z]+\t/, ''))}
+              </div>
+            ` : ''}
           </div>
           <div class="source-card-foot">
             <span style="font-size: 0.75rem; color: var(--muted);">api.datamuse.com</span>
             <a class="source-ext-link" href="https://www.datamuse.com/api/" target="_blank" rel="noopener noreferrer">API Info ↗</a>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">🧠</span>
+              <span class="source-card-title">Datamuse Lexical Engine</span>
+            </div>
+            <span class="source-status-badge">No data</span>
+          </div>
+          <div class="source-card-body">
+            <p style="font-size: 0.84rem; color: var(--muted);">No Datamuse data returned for “${escHtml(word)}”.</p>
+          </div>
+          <div class="source-card-foot">
+            <span style="font-size: 0.75rem; color: var(--muted);">api.datamuse.com</span>
+          </div>
+        `;
+      }
+    }
 
-      // 4. Wikipedia Summary Card
-      const wp = data.wikipedia;
-      cardsHtml += `
-        <div class="source-card">
+    function renderWikipediaCard(word, wiki) {
+      const card = $('srcCard-wikipedia');
+      if (!card) return;
+
+      if (wiki && wiki.extract) {
+        card.innerHTML = `
           <div class="source-card-head">
             <div class="source-card-identity">
               <span class="source-card-icon">🌐</span>
               <span class="source-card-title">Wikipedia Context</span>
             </div>
-            <span class="source-status-badge ${wp && wp.extract ? 'live' : ''}">${wp && wp.extract ? 'Live Data' : 'No article'}</span>
+            <span class="source-status-badge live">Live Data</span>
           </div>
           <div class="source-card-body">
-            ${wp && wp.extract ? `
-              ${wp.thumbnail?.source ? `<img src="${escAttr(wp.thumbnail.source)}" alt="${escAttr(word)}" style="max-height: 120px; width: auto; border-radius: 8px; object-fit: contain; margin-bottom: 0.5rem;">` : ''}
-              <div style="font-size: 0.9rem; line-height: 1.5;">${escHtml(wp.extract)}</div>
-            ` : '<p style="color: var(--muted);">No matching Wikipedia summary.</p>'}
+            ${wiki.thumbnail?.source ? `<img src="${escAttr(wiki.thumbnail.source)}" alt="${escAttr(word)}" style="max-height: 120px; width: auto; border-radius: 8px; object-fit: contain; margin-bottom: 0.5rem;">` : ''}
+            <div style="font-size: 0.88rem; line-height: 1.5; color: var(--text);">${escHtml(wiki.extract)}</div>
           </div>
           <div class="source-card-foot">
-            <span style="font-size: 0.75rem; color: var(--muted);">${wp?.description || 'Encyclopedic'}</span>
-            ${wp?.content_urls?.desktop?.page ? `<a class="source-ext-link" href="${escAttr(wp.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Full Article ↗</a>` : ''}
+            <span style="font-size: 0.75rem; color: var(--muted);">${escHtml(wiki.description || 'Encyclopedic')}</span>
+            ${wiki.content_urls?.desktop?.page ? `<a class="source-ext-link" href="${escAttr(wiki.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Full Article ↗</a>` : ''}
           </div>
-        </div>
-      `;
-
-      grid.innerHTML = cardsHtml;
+        `;
+      } else {
+        card.innerHTML = `
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">🌐</span>
+              <span class="source-card-title">Wikipedia Context</span>
+            </div>
+            <span class="source-status-badge">No article</span>
+          </div>
+          <div class="source-card-body">
+            <p style="font-size: 0.84rem; color: var(--muted);">No matching Wikipedia article summary found.</p>
+          </div>
+          <div class="source-card-foot">
+            <a class="source-ext-link" href="https://en.wikipedia.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Search Wikipedia ↗</a>
+          </div>
+        `;
+      }
     }
 
     /* ═══════════════════════════════════════════════════
