@@ -3,869 +3,3130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vocab — Dictionary Aggregator</title>
+  <title>Vocab — American English & Multilingual Dictionary Aggregator</title>
+  <meta name="description" content="Explore American English definitions, intuitive plain-English explanations, authentic audio pronunciations, real-world examples, synonyms, and embeddable free dictionaries.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #f0f2f5;
+      --bg: #f8fafc;
+      --bg-alt: #f1f5f9;
       --surface: #ffffff;
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: #eef2ff;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --radius: 12px;
+      --surface-elevated: #ffffff;
+      --surface-hover: #f8fafc;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --primary-border: #bfdbfe;
+      --accent: #dc2626;
+      --accent-light: #fef2f2;
+      --accent-border: #fecaca;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --border-subtle: #edf2f7;
+      --radius: 16px;
       --radius-sm: 8px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --radius-md: 12px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+
+      --pos-noun: #2563eb;
+      --pos-noun-bg: #eff6ff;
+      --pos-verb: #059669;
+      --pos-verb-bg: #ecfdf5;
+      --pos-adj: #7c3aed;
+      --pos-adj-bg: #f5f3ff;
+      --pos-adv: #d97706;
+      --pos-adv-bg: #fffbeb;
+      --pos-other: #0891b2;
+      --pos-other-bg: #ecfeff;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b0f19;
+      --bg-alt: #111827;
+      --surface: #171f30;
+      --surface-elevated: #1e293b;
+      --surface-hover: #222e44;
+      --primary: #60a5fa;
+      --primary-hover: #93c5fd;
+      --primary-light: #1e293b;
+      --primary-border: #2563eb;
+      --accent: #f87171;
+      --accent-light: #3f1818;
+      --accent-border: #7f1d1d;
+      --text: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --muted: #94a3b8;
+      --border: #243048;
+      --border-subtle: #1c263b;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.5);
+      --shadow-xl: 0 20px 32px rgba(0, 0, 0, 0.6);
+
+      --pos-noun: #93c5fd;
+      --pos-noun-bg: #1e293b;
+      --pos-verb: #6ee7b7;
+      --pos-verb-bg: #064e3b;
+      --pos-adj: #c4b5fd;
+      --pos-adj-bg: #3b1d75;
+      --pos-adv: #fcd34d;
+      --pos-adv-bg: #451a03;
+      --pos-other: #67e8f9;
+      --pos-other-bg: #164e63;
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f1117;
-        --surface: #1a1d2e;
-        --primary: #818cf8;
-        --primary-hover: #a5b4fc;
-        --primary-light: #1e1b4b;
-        --text: #f1f5f9;
+      :root:not([data-theme="light"]) {
+        --bg: #0b0f19;
+        --bg-alt: #111827;
+        --surface: #171f30;
+        --surface-elevated: #1e293b;
+        --surface-hover: #222e44;
+        --primary: #60a5fa;
+        --primary-hover: #93c5fd;
+        --primary-light: #1e293b;
+        --primary-border: #2563eb;
+        --accent: #f87171;
+        --accent-light: #3f1818;
+        --accent-border: #7f1d1d;
+        --text: #f8fafc;
+        --text-secondary: #cbd5e1;
         --muted: #94a3b8;
-        --border: #2d3348;
-        --shadow: 0 1px 3px rgba(0,0,0,0.3);
-        --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+        --border: #243048;
+        --border-subtle: #1c263b;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.5);
+        --shadow-xl: 0 20px 32px rgba(0, 0, 0, 0.6);
+
+        --pos-noun: #93c5fd;
+        --pos-noun-bg: #1e293b;
+        --pos-verb: #6ee7b7;
+        --pos-verb-bg: #064e3b;
+        --pos-adj: #c4b5fd;
+        --pos-adj-bg: #3b1d75;
+        --pos-adv: #fcd34d;
+        --pos-adv-bg: #451a03;
+        --pos-other: #67e8f9;
+        --pos-other-bg: #164e63;
       }
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      line-height: 1.5;
+      line-height: 1.6;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      -webkit-font-smoothing: antialiased;
     }
 
-    #app { min-height: 100vh; display: flex; flex-direction: column; }
+    #app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .search-bar {
+    /* ═══════════════════════════════════════════════════
+       HEADER & TOP BAR
+    ═══════════════════════════════════════════════════ */
+    .top-header {
       background: var(--surface);
-      border-bottom: 1px solid transparent;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.idle .top-header {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2.5rem 1.5rem 2rem;
-      position: sticky;
-      top: 0;
-      z-index: 20;
+      border-bottom-color: transparent;
+      padding: 3rem 1.5rem;
+      background: radial-gradient(circle at 50% 25%, var(--primary-light) 0%, var(--bg) 80%);
     }
 
-    body.idle .search-bar { flex: 1; border-bottom-color: transparent; }
-    body.has-results .search-bar {
-      flex: none;
+    body.has-results .top-header {
       padding: 0.85rem 1.5rem;
-      border-bottom-color: var(--border);
       box-shadow: var(--shadow);
+      background: var(--surface);
     }
 
-    .logo {
-      font-size: 2.25rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      color: var(--primary);
-      cursor: pointer;
-      user-select: none;
-      margin-bottom: 0.35rem;
-    }
-
-    .tagline {
-      color: var(--muted);
-      font-size: 0.95rem;
-      margin-bottom: 1.5rem;
-    }
-
-    body.has-results .logo { font-size: 1.2rem; margin-bottom: 0; margin-right: 1rem; }
-    body.has-results .tagline { display: none; }
-
-    .bar-inner {
+    .nav-top-controls {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
       display: flex;
       align-items: center;
-      width: 100%;
-      max-width: 640px;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
-    body.has-results .bar-inner { max-width: 100%; }
-    body.has-results .search-bar { flex-direction: row; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start; }
+    body.has-results .nav-top-controls {
+      position: static;
+      margin-left: auto;
+    }
+
+    .icon-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .icon-btn:hover {
+      background: var(--surface-hover);
+      color: var(--primary);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .icon-btn .badge-counter {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--accent);
+      color: white;
+      font-size: 0.68rem;
+      font-weight: 700;
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-content-wrapper {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    body.has-results .header-content-wrapper {
+      max-width: 1240px;
+      margin: 0 auto;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .branding-box {
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    body.has-results .branding-box {
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .app-logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 60%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    body.has-results .app-logo {
+      font-size: 1.45rem;
+    }
+
+    .logo-badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-full);
+      vertical-align: middle;
+      -webkit-text-fill-color: var(--primary);
+    }
+
+    .app-tagline {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-weight: 400;
+    }
+
+    body.has-results .app-tagline {
+      display: none;
+    }
+
+    /* Search Bar Form */
+    .search-container {
+      width: 100%;
+      position: relative;
+    }
+
+    body.has-results .search-container {
+      flex: 1;
+      max-width: 620px;
+    }
+
+    .search-input-shell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .search-input-shell:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-icon {
+      margin-left: 1rem;
+      color: var(--muted);
+      font-size: 1.1rem;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
 
     #searchInput {
       flex: 1;
-      padding: 0.7rem 1rem;
-      font-size: 1rem;
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
+      border: none;
+      background: transparent;
+      padding: 0.85rem 0.9rem;
+      font-size: 1.1rem;
+      font-family: inherit;
       color: var(--text);
       outline: none;
       min-width: 0;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      font-weight: 500;
     }
 
-    #searchInput:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    #searchInput::placeholder { color: var(--muted); opacity: 0.7; }
-
-    #searchBtn {
-      padding: 0.7rem 1.4rem;
+    body.has-results #searchInput {
+      padding: 0.65rem 0.85rem;
       font-size: 1rem;
-      font-weight: 600;
-      background: var(--primary);
-      color: #fff;
+    }
+
+    #searchInput::placeholder {
+      color: var(--muted);
+      opacity: 0.75;
+      font-weight: 400;
+    }
+
+    .clear-search-btn {
+      background: none;
       border: none;
-      border-radius: var(--radius);
+      color: var(--muted);
+      padding: 0.4rem;
+      margin-right: 0.3rem;
       cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s, transform 0.1s;
+      display: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      line-height: 1;
     }
 
-    #searchBtn:hover { background: var(--primary-hover); }
-    #searchBtn:active { transform: scale(0.97); }
+    .clear-search-btn:hover {
+      color: var(--text);
+      background: var(--bg-alt);
+    }
 
-    .mode-tabs {
+    .search-submit-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.65rem 1.35rem;
+      margin: 0.3rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
       display: flex;
-      gap: 0.2rem;
-      background: var(--bg);
-      padding: 0.2rem;
-      border-radius: var(--radius);
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
-    body.idle .mode-tabs { margin-top: 1rem; }
+    .search-submit-btn:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    .search-submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Mode Tabs */
+    .mode-selector {
+      display: flex;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      padding: 0.25rem;
+      border-radius: var(--radius-md);
+      gap: 0.2rem;
+    }
+
+    body.idle .mode-selector {
+      margin-top: 0.5rem;
+    }
 
     .mode-tab {
-      padding: 0.35rem 0.9rem;
-      font-size: 0.84rem;
-      font-weight: 500;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
       border: none;
       background: transparent;
       color: var(--muted);
       border-radius: var(--radius-sm);
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
       white-space: nowrap;
-      transition: color 0.15s, background 0.15s, box-shadow 0.15s;
     }
 
-    .mode-tab:hover { color: var(--text); }
-    .mode-tab.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow); }
+    .mode-tab:hover {
+      color: var(--text);
+    }
 
-    .kbd-hint {
-      font-size: 0.72rem;
+    .mode-tab.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mode-tab .flag-icon {
+      font-size: 1rem;
+    }
+
+    .kbd-shortcut-hint {
+      font-size: 0.75rem;
       color: var(--muted);
-      margin-top: 0.9rem;
-      opacity: 0.6;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.25rem;
     }
 
-    .kbd-hint kbd {
-      background: var(--bg);
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-      font-family: inherit;
-      font-size: 0.69rem;
-    }
-
-    body.has-results .kbd-hint { display: none; }
-
-    .results-area {
-      flex: 1;
-      padding: 1.5rem;
-      max-width: 1100px;
-      width: 100%;
-      margin: 0 auto;
+    body.has-results .kbd-shortcut-hint {
       display: none;
     }
 
-    body.has-results .results-area { display: block; }
+    kbd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       RECENT SEARCHES PILLS
+    ═══════════════════════════════════════════════════ */
+    .recent-searches-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.6rem;
+      max-width: 680px;
+      justify-content: center;
+    }
+
+    body.has-results .recent-searches-bar {
+      display: none;
+    }
+
+    .recent-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .recent-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .recent-chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+      transform: translateY(-1px);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MAIN CONTENT LAYOUT
+    ═══════════════════════════════════════════════════ */
+    .main-viewport {
+      flex: 1;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 4rem;
+      display: none;
+    }
+
+    body.has-results .main-viewport {
+      display: block;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* View Switcher Tabs (Unified / Sources / Reference) */
+    .content-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .content-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .content-tab-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .content-tab-btn:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    .content-tab-btn.active {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .speed-controller {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-full);
+    }
+
+    .speed-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    .speed-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       HERO WORD CARD (Unified view)
+    ═══════════════════════════════════════════════════ */
+    .hero-word-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .hero-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .hero-word-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .hero-word-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .syllables-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .frequency-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-full);
+      background: var(--bg-alt);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    /* Actions (Bookmark, Share, Copy) */
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-pill-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .action-pill-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .action-pill-btn.starred {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #b45309;
+    }
+
+    [data-theme="dark"] .action-pill-btn.starred {
+      background: #451a03;
+      border-color: #b45309;
+      color: #fcd34d;
+    }
+
+    /* Pronunciation Badges */
+    .pronunciation-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .accent-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .accent-pill.us-primary {
+      background: var(--primary-light);
+      border-color: var(--primary-border);
+      box-shadow: 0 0 0 1px var(--primary-border);
+    }
+
+    .accent-pill .flag-label {
+      font-weight: 800;
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .accent-pill.uk-secondary .flag-label {
+      color: var(--muted);
+    }
+
+    .accent-pill .ipa-text {
+      font-family: 'Newsreader', serif;
+      font-size: 1.12rem;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    .audio-play-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 1.9rem;
+      height: 1.9rem;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .accent-pill.uk-secondary .audio-play-btn {
+      background: var(--text-secondary);
+    }
+
+    .audio-play-btn:hover {
+      transform: scale(1.08);
+      filter: brightness(1.1);
+    }
+
+    .audio-play-btn:active {
+      transform: scale(0.95);
+    }
+
+    .audio-play-btn.playing {
+      animation: pulseAudio 0.8s infinite alternate;
+      background: var(--accent);
+    }
+
+    @keyframes pulseAudio {
+      from { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      to { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+    }
+
+    /* Intuitive Explanation Box */
+    .intuitive-explain-box {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.07) 0%, rgba(139, 92, 246, 0.07) 100%);
+      border: 1px solid var(--primary-border);
+      border-radius: var(--radius-md);
+      padding: 1.15rem 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      position: relative;
+    }
+
+    .explain-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--primary);
+    }
+
+    .explain-text {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .explain-context-tag {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TWO-COLUMN LAYOUT (Definitions vs Word Brain)
+    ═══════════════════════════════════════════════════ */
+    .grid-dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .grid-dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Part of speech section */
+    .pos-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+
+    .pos-header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .pos-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.25rem 0.7rem;
+      border-radius: var(--radius-full);
+    }
+
+    .pos-badge.noun { background: var(--pos-noun-bg); color: var(--pos-noun); }
+    .pos-badge.verb { background: var(--pos-verb-bg); color: var(--pos-verb); }
+    .pos-badge.adjective { background: var(--pos-adj-bg); color: var(--pos-adj); }
+    .pos-badge.adverb { background: var(--pos-adv-bg); color: var(--pos-adv); }
+    .pos-badge.other { background: var(--pos-other-bg); color: var(--pos-other); }
+
+    .pos-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .definitions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .def-item {
+      display: flex;
+      gap: 0.9rem;
+    }
+
+    .def-num {
+      width: 1.6rem;
+      height: 1.6rem;
+      border-radius: var(--radius-full);
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+
+    .def-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .def-meaning {
+      font-size: 1.02rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .def-register-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      margin-right: 0.4rem;
+      display: inline-block;
+    }
+
+    .def-example-quote {
+      font-family: 'Newsreader', serif;
+      font-style: italic;
+      font-size: 0.98rem;
+      color: var(--text-secondary);
+      background: var(--bg-alt);
+      border-left: 3px solid var(--primary);
+      padding: 0.5rem 0.85rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-top: 0.2rem;
+    }
+
+    .def-sub-synonyms {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.35rem;
+    }
+
+    .sub-syn-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 0.2rem;
+    }
+
+    /* Sidebar / Word Explorer Brain */
+    .sidebar-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .explorer-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .explorer-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .explorer-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .chips-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .clickable-word-chip {
+      font-family: inherit;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--primary);
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.65rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .clickable-word-chip:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .clickable-word-chip.antonym-chip {
+      color: var(--accent);
+    }
+
+    .clickable-word-chip.antonym-chip:hover {
+      background: var(--accent-light);
+      border-color: var(--accent-border);
+    }
+
+    /* Etymology Card */
+    .etymology-content {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: var(--text-secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SOURCE CARDS TAB (Live Embeddable Dictionaries)
+    ═══════════════════════════════════════════════════ */
+    .sources-view {
+      display: none;
+    }
+
+    .sources-view.active {
+      display: block;
+    }
+
+    .unified-view.active {
+      display: block;
+    }
+
+    .unified-view:not(.active) {
+      display: none;
+    }
+
+    .reference-view.active {
+      display: block;
+    }
+
+    .reference-view:not(.active) {
+      display: none;
+    }
 
     .source-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.25rem;
       margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .source-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.1rem 1.2rem;
-      box-shadow: var(--shadow);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      min-height: 160px;
+      gap: 0.9rem;
+      min-height: 220px;
     }
 
-    .card-head {
+    .source-card-head {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
     }
 
-    .card-identity { display: flex; align-items: center; gap: 0.55rem; }
+    .source-card-identity {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
 
-    .card-icon {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 0.6rem;
-      background: var(--primary-light);
+    .source-card-icon {
+      font-size: 1.25rem;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-alt);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
     }
 
-    .card-name { font-size: 0.9rem; font-weight: 700; }
-
-    .badge {
-      border-radius: 999px;
-      padding: 0.18rem 0.55rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      white-space: nowrap;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      flex-shrink: 0;
+    .source-card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text);
     }
 
-    .badge.ok { border-color: rgba(16,185,129,0.3); color: #059669; background: rgba(16,185,129,0.07); }
-
-    .card-body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; overflow: hidden; }
-
-    .def-block { display: flex; flex-direction: column; gap: 0.2rem; }
-
-    .pos-tag {
-      display: inline-block;
+    .source-status-badge {
       font-size: 0.72rem;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--primary);
-      background: var(--primary-light);
-      padding: 0.1rem 0.45rem;
-      border-radius: 4px;
-      margin-bottom: 0.1rem;
-    }
-
-    .def-text {
-      padding-left: 0.85rem;
-      border-left: 2px solid var(--border);
-      font-size: 0.9rem;
-      color: var(--text);
-      line-height: 1.45;
-    }
-
-    .def-example {
-      padding-left: 0.85rem;
-      font-style: italic;
-      font-size: 0.82rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
       color: var(--muted);
     }
 
-    .word-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-
-    .word-chip {
-      padding: 0.2rem 0.55rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      font-size: 0.8rem;
-      cursor: pointer;
-      color: var(--primary);
-      background: transparent;
-      transition: background 0.15s, border-color 0.15s;
+    .source-status-badge.live {
+      color: #059669;
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
     }
 
-    .word-chip:hover { background: var(--primary-light); border-color: var(--primary); }
+    .source-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+      max-height: 380px;
+    }
 
-    .translation-pair { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem; }
-    .translation-arrow { font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
-    .translation-main { font-size: 0.95rem; font-weight: 600; }
-
-    .card-loading {
+    .source-card-foot {
+      margin-top: auto;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
-      gap: 0.7rem;
+      justify-content: space-between;
+    }
+
+    .source-ext-link {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .source-ext-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       US REFERENCE DICTIONARIES GRID
+    ═══════════════════════════════════════════════════ */
+    .reference-section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2rem;
+    }
+
+    .ref-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .ref-section-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .ref-batch-btn {
+      background: var(--primary-light);
+      border: 1px solid var(--primary-border);
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+
+    .ref-batch-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .ref-card-link {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.95rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ref-card-link:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .ref-card-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .ref-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ref-card-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ref-card-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ref-card-arrow {
       color: var(--muted);
       font-size: 0.85rem;
-      padding: 0.5rem 0;
+      transition: transform 0.15s, color 0.15s;
+      flex-shrink: 0;
     }
 
-    .card-empty { color: var(--muted); font-size: 0.85rem; padding: 0.5rem 0; }
+    .ref-card-link:hover .ref-card-arrow {
+      transform: translateX(3px);
+      color: var(--primary);
+    }
 
-    .card-foot { margin-top: auto; display: flex; justify-content: flex-end; }
+    /* ═══════════════════════════════════════════════════
+       BOOKMARKS / STARRED DRAWER
+    ═══════════════════════════════════════════════════ */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
 
-    .ext-link {
-      font-size: 0.78rem;
-      font-weight: 600;
+    .drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: var(--shadow-xl);
+      z-index: 60;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer-backdrop.open .drawer-panel {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .empty-drawer-note {
+      text-align: center;
       color: var(--muted);
-      text-decoration: none;
-      opacity: 0.7;
-      transition: opacity 0.15s, color 0.15s;
+      font-size: 0.9rem;
+      padding: 3rem 1rem;
     }
 
-    .ext-link:hover { opacity: 1; color: var(--primary); }
+    .bookmark-item {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .bookmark-item:hover {
+      border-color: var(--primary);
+      background: var(--surface);
+    }
 
+    .bookmark-word {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    .bookmark-remove-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0.3rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .bookmark-remove-btn:hover {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       IN-APP EMBED DRAWER (Wiktionary, YouGlish, etc.)
+    ═══════════════════════════════════════════════════ */
+    .embed-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 70;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .embed-modal.open {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .embed-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+    }
+
+    .embed-bar {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-alt);
+    }
+
+    .embed-title-text {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .embed-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: white;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SPINNER & TOAST
+    ═══════════════════════════════════════════════════ */
     .spinner {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border: 2px solid var(--border);
       border-top-color: var(--primary);
       border-radius: 50%;
       animation: spin 0.65s linear infinite;
-      flex-shrink: 0;
+      display: inline-block;
     }
 
-    .audio-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.95rem;
-      padding: 0 0.2rem;
-      opacity: 0.6;
-      vertical-align: middle;
-      transition: opacity 0.15s;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    .audio-btn:hover { opacity: 1; }
-
-    .phonetic-line {
-      font-size: 0.83rem;
+    .loading-state-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      padding: 3rem 1rem;
       color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .ref-section { margin-bottom: 2rem; }
-
-    .ref-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-      gap: 1rem;
-    }
-
-    .section-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--muted);
-    }
-
-    #openAllBtn {
-      padding: 0.4rem 0.9rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      background: var(--primary-light);
-      color: var(--primary);
-      border: 1px solid var(--primary);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    #openAllBtn:hover { background: var(--primary); color: #fff; }
-
-    .ref-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 0.65rem;
-    }
-
-    .ref-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.75rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      text-decoration: none;
-      color: inherit;
-      font-size: 0.88rem;
       font-weight: 500;
-      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
     }
 
-    .ref-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    .ref-card:active { transform: translateY(0); }
+    .toast-msg {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text);
+      color: var(--surface);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-md);
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
 
-    .ref-icon { font-size: 1.2rem; flex-shrink: 0; }
-    .ref-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .ref-arrow { color: var(--muted); font-size: 0.8rem; transition: transform 0.15s, color 0.15s; flex-shrink: 0; }
-    .ref-card:hover .ref-arrow { transform: translateX(2px); color: var(--primary); }
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
 
-    .footer {
+    /* Footer */
+    .site-footer {
       text-align: center;
-      padding: 2rem 1rem;
-      font-size: 0.72rem;
+      padding: 2.5rem 1rem;
+      font-size: 0.8rem;
       color: var(--muted);
-      opacity: 0.45;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: auto;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
     }
 
     @media (max-width: 640px) {
-      .logo { font-size: 1.9rem; }
-      body.has-results .logo { font-size: 1.1rem; }
-      .search-bar { padding: 1.5rem 1rem; }
-      body.has-results .search-bar { padding: 0.75rem 1rem; }
-      .results-area { padding: 1rem; }
-      .source-grid { grid-template-columns: 1fr; }
-      .ref-grid { grid-template-columns: 1fr; }
-      #searchBtn { padding: 0.7rem 1rem; }
-      .mode-tab { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
-      body.has-results .bar-inner { flex: 1; min-width: 0; }
+      .app-logo { font-size: 2rem; }
+      body.has-results .app-logo { font-size: 1.3rem; }
+      .hero-word-title { font-size: 2rem; }
+      .hero-word-card { padding: 1.25rem; }
+      .content-nav-bar { flex-direction: column; align-items: flex-start; }
+      .pronunciation-row { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body class="idle">
   <div id="app">
-    <header class="search-bar">
-      <div class="logo" onclick="goHome()">Vocab</div>
-      <p class="tagline">Search multiple dictionaries at once</p>
-
-      <div class="bar-inner">
-        <input type="text" id="searchInput" placeholder="Type a word…" autofocus autocomplete="off" spellcheck="false">
-        <button id="searchBtn">Search</button>
+    <!-- TOP STICKY HEADER -->
+    <header class="top-header">
+      <div class="nav-top-controls">
+        <button class="icon-btn" id="savedWordsBtn" title="Saved Words / Vocabulary List">
+          ⭐
+          <span class="badge-counter" id="savedCountBadge" style="display: none;">0</span>
+        </button>
+        <button class="icon-btn" id="themeToggleBtn" title="Toggle Dark / Light Mode">
+          🌓
+        </button>
       </div>
 
-      <div class="mode-tabs" id="modeTabs">
-        <button class="mode-tab active" data-mode="en">English</button>
-        <button class="mode-tab" data-mode="ca">Català</button>
-        <button class="mode-tab" data-mode="caen">CA ↔ EN</button>
-      </div>
+      <div class="header-content-wrapper">
+        <div class="branding-box" onclick="goHome()">
+          <div class="app-logo">
+            Vocab <span class="logo-badge">US English</span>
+          </div>
+          <p class="app-tagline">American English & Multilingual Dictionary Aggregator</p>
+        </div>
 
-      <div class="kbd-hint"><kbd>Enter</kbd> to search · <kbd>/</kbd> to focus</div>
+        <div class="search-container">
+          <form class="search-input-shell" id="searchForm" onsubmit="handleFormSubmit(event)">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search American English definition, word, or idiom…" autofocus autocomplete="off" spellcheck="false">
+            <button type="button" class="clear-search-btn" id="clearSearchBtn" title="Clear input">✕</button>
+            <button type="submit" class="search-submit-btn">Search</button>
+          </form>
+        </div>
+
+        <div class="mode-selector" id="modeTabs">
+          <button type="button" class="mode-tab active" data-mode="en">
+            <span class="flag-icon">🇺🇸</span> English (US)
+          </button>
+          <button type="button" class="mode-tab" data-mode="ca">
+            <span class="flag-icon">🔵</span> Català
+          </button>
+          <button type="button" class="mode-tab" data-mode="caen">
+            <span class="flag-icon">🔄</span> CA ↔ EN
+          </button>
+        </div>
+
+        <div class="kbd-shortcut-hint">
+          <span>Press <kbd>/</kbd> to search</span>
+          <span>·</span>
+          <span><kbd>Enter</kbd> to lookup</span>
+          <span>·</span>
+          <span><kbd>Esc</kbd> to clear</span>
+        </div>
+
+        <!-- RECENT SEARCHES -->
+        <div class="recent-searches-bar" id="recentSearchesBar"></div>
+      </div>
     </header>
 
-    <main class="results-area">
-      <div class="source-grid" id="sourceGrid"></div>
-
-      <div class="ref-section">
-        <div class="ref-head">
-          <span class="section-label" id="refLabel">Reference dictionaries</span>
-          <button id="openAllBtn">Open all ↗</button>
+    <!-- MAIN VIEWPORT (HAS RESULTS) -->
+    <main class="main-viewport" id="mainViewport">
+      <!-- CONTENT NAVIGATION BAR -->
+      <nav class="content-nav-bar">
+        <div class="content-tabs">
+          <button class="content-tab-btn active" data-view="unified" onclick="switchView('unified')">
+            ✨ Smart Overview
+          </button>
+          <button class="content-tab-btn" data-view="sources" onclick="switchView('sources')">
+            📚 Free Dictionaries <span id="sourcesCounterBadge">(4)</span>
+          </button>
+          <button class="content-tab-btn" data-view="reference" onclick="switchView('reference')">
+            🇺🇸 American References
+          </button>
         </div>
-        <div class="ref-grid" id="refGrid"></div>
+
+        <div class="speed-controller" id="speedController">
+          <span>Speech:</span>
+          <button class="speed-btn active" data-speed="1.0" onclick="setSpeechSpeed(1.0)">1.0x</button>
+          <button class="speed-btn" data-speed="0.8" onclick="setSpeechSpeed(0.8)">0.8x (Slow)</button>
+        </div>
+      </nav>
+
+      <!-- VIEW 1: SMART OVERVIEW -->
+      <div class="unified-view active" id="unifiedView">
+        <div class="hero-word-card" id="heroCard">
+          <div class="hero-top-row">
+            <div class="hero-word-group">
+              <h1 class="hero-word-title">
+                <span id="heroWordText">—</span>
+                <span class="syllables-tag" id="heroSyllables"></span>
+                <span class="frequency-badge" id="heroFrequency" style="display: none;"></span>
+              </h1>
+            </div>
+
+            <div class="hero-actions">
+              <button class="action-pill-btn" id="starWordBtn" onclick="toggleSaveCurrentWord()">
+                <span id="starIcon">⭐</span> <span id="starText">Save</span>
+              </button>
+              <button class="action-pill-btn" onclick="copyWordDefinition()">
+                📋 Copy
+              </button>
+              <button class="action-pill-btn" onclick="shareWordLink()">
+                🔗 Share
+              </button>
+            </div>
+          </div>
+
+          <!-- PRONUNCIATION ROW -->
+          <div class="pronunciation-row" id="pronunciationRow"></div>
+
+          <!-- INTUITIVE EXPLANATION -->
+          <div class="intuitive-explain-box" id="intuitiveBox" style="display: none;">
+            <div class="explain-head">
+              💡 In Plain English (Intuitive Meaning)
+            </div>
+            <div class="explain-text" id="intuitiveText"></div>
+            <div class="explain-context-tag" id="intuitiveContext"></div>
+          </div>
+        </div>
+
+        <!-- TWO COLUMN DASHBOARD -->
+        <div class="grid-dashboard">
+          <!-- DEFINITIONS COLUMN -->
+          <div class="definitions-column" id="definitionsContainer">
+            <div class="loading-state-box">
+              <div class="spinner"></div> Loading comprehensive American English definitions…
+            </div>
+          </div>
+
+          <!-- WORD EXPLORER SIDEBAR -->
+          <aside class="sidebar-pane">
+            <!-- SYNONYMS CARD -->
+            <div class="explorer-card" id="synonymsCard" style="display: none;">
+              <div class="explorer-head">
+                <div class="explorer-title">🔄 Closest Synonyms</div>
+              </div>
+              <div class="chips-cloud" id="synonymsCloud"></div>
+            </div>
+
+            <!-- ANTONYMS CARD -->
+            <div class="explorer-card" id="antonymsCard" style="display: none;">
+              <div class="explorer-head">
+                <div class="explorer-title">↔️ Antonyms (Opposites)</div>
+              </div>
+              <div class="chips-cloud" id="antonymsCloud"></div>
+            </div>
+
+            <!-- RELATED CONCEPTS CARD -->
+            <div class="explorer-card" id="relatedCard" style="display: none;">
+              <div class="explorer-head">
+                <div class="explorer-title">🧠 Related Concepts ("Means like")</div>
+              </div>
+              <div class="chips-cloud" id="relatedCloud"></div>
+            </div>
+
+            <!-- RHYMES & SOUNDS LIKE -->
+            <div class="explorer-card" id="rhymesCard" style="display: none;">
+              <div class="explorer-head">
+                <div class="explorer-title">🎵 Rhymes & Sounds Like</div>
+              </div>
+              <div class="chips-cloud" id="rhymesCloud"></div>
+            </div>
+
+            <!-- FREQUENT COLLOCATIONS -->
+            <div class="explorer-card" id="collocationsCard" style="display: none;">
+              <div class="explorer-head">
+                <div class="explorer-title">🧩 Frequently Used Together</div>
+              </div>
+              <div class="chips-cloud" id="collocationsCloud"></div>
+            </div>
+
+            <!-- ETYMOLOGY & ORIGINS -->
+            <div class="explorer-card" id="etymologyCard" style="display: none;">
+              <div class="explorer-head">
+                <div class="explorer-title">🧬 Etymology & Origins</div>
+              </div>
+              <div class="etymology-content" id="etymologyContent"></div>
+            </div>
+          </aside>
+        </div>
       </div>
 
-      <div class="footer">Vocab · No ads · No tracking · Just dictionaries</div>
+      <!-- VIEW 2: FREE SOURCES GRID -->
+      <div class="sources-view" id="sourcesView">
+        <div class="source-grid" id="sourcesGrid"></div>
+      </div>
+
+      <!-- VIEW 3: AMERICAN REFERENCES -->
+      <div class="reference-view" id="referenceView">
+        <div class="reference-section-card">
+          <div class="ref-header-row">
+            <h2 class="ref-section-title" id="refSectionTitle">
+              🇺🇸 Authoritative American Dictionaries & Pronunciation References
+            </h2>
+            <button class="ref-batch-btn" id="openAllRefsBtn" onclick="openAllReferences()">
+              Open all in tabs ↗
+            </button>
+          </div>
+          <div class="ref-grid" id="refGrid"></div>
+        </div>
+      </div>
     </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="footer-links">
+        <a href="javascript:void(0)" onclick="searchWord('serendipity')">Serendipity</a>
+        <a href="javascript:void(0)" onclick="searchWord('ephemeral')">Ephemeral</a>
+        <a href="javascript:void(0)" onclick="searchWord('resilient')">Resilient</a>
+        <a href="javascript:void(0)" onclick="searchWord('eloquent')">Eloquent</a>
+        <a href="javascript:void(0)" onclick="searchWord('pragmatic')">Pragmatic</a>
+      </div>
+      <p>Vocab · Prioritizing American English, Embeddable Free Dictionaries, and Intuitive Explanations</p>
+    </footer>
   </div>
 
+  <!-- SAVED WORDS DRAWER -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer(event)">
+    <div class="drawer-panel" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div class="drawer-title">⭐ Saved Vocabulary</div>
+        <button class="icon-btn" onclick="toggleSavedDrawer()" title="Close drawer">✕</button>
+      </div>
+      <div class="drawer-body" id="drawerBody">
+        <div class="empty-drawer-note">
+          No saved words yet.<br>Click the ⭐ Save button on any word to bookmark it for later study!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IN-APP EMBED MODAL (For live embedded preview) -->
+  <div class="embed-modal" id="embedModal" onclick="closeEmbedModal(event)">
+    <div class="embed-container" onclick="event.stopPropagation()">
+      <div class="embed-bar">
+        <div class="embed-title-text" id="embedTitle">Dictionary Viewer</div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a id="embedDirectLink" href="#" target="_blank" rel="noopener noreferrer" class="ref-batch-btn" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">Open in Tab ↗</a>
+          <button class="icon-btn" style="width: 2rem; height: 2rem;" onclick="closeEmbedModal()">✕</button>
+        </div>
+      </div>
+      <iframe class="embed-frame" id="embedIframe" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-msg" id="toastMsg">Notification</div>
+
   <script>
-    /* ── External reference links (open in new tab) ── */
-    const REF = {
+    /* ═══════════════════════════════════════════════════
+       STATE MANAGEMENT
+    ═══════════════════════════════════════════════════ */
+    let currentMode = localStorage.getItem('vocab-mode') || 'en';
+    let currentWord = '';
+    let currentSpeechRate = 1.0;
+    let currentActiveView = 'unified';
+    let currentWordData = null; // aggregated result
+    let searchSequence = 0;
+    let currentlyPlayingAudio = null;
+
+    // Saved words list
+    let savedWords = JSON.parse(localStorage.getItem('vocab-saved-words') || '[]');
+    let recentSearches = JSON.parse(localStorage.getItem('vocab-recents') || '["serendipity","ephemeral","resilient","eloquent"]');
+
+    /* ═══════════════════════════════════════════════════
+       DICTIONARY REFERENCE CONFIGURATION
+       (Prioritizing Authoritative American English)
+    ═══════════════════════════════════════════════════ */
+    const REFERENCES = {
       en: [
-        { name: 'Cambridge',         icon: '📘', url: w => https://dictionary.cambridge.org/dictionary/english/ + enc(w) },
-        { name: 'Merriam-Webster',   icon: '📕', url: w => https://www.merriam-webster.com/dictionary/ + enc(w) },
-        { name: 'Longman',           icon: '📗', url: w => https://www.ldoceonline.com/dictionary/ + enc(w) },
-        { name: 'Collins',           icon: '📙', url: w => https://www.collinsdictionary.com/dictionary/english/ + enc(w) },
-        { name: "Oxford Learner's",  icon: '📓', url: w => https://www.oxfordlearnersdictionaries.com/definition/english/ + enc(w) },
-        { name: 'Wiktionary',        icon: '📖', url: w => https://en.wiktionary.org/wiki/ + enc(w) },
-        { name: 'Thesaurus.com',     icon: '🔠', url: w => https://www.thesaurus.com/browse/ + enc(w) },
+        {
+          name: 'Merriam-Webster',
+          desc: 'America’s foremost, most trusted dictionary',
+          icon: '📕',
+          url: w => 'https://www.merriam-webster.com/dictionary/' + enc(w),
+          embeddable: false
+        },
+        {
+          name: 'American Heritage Dictionary',
+          desc: 'Definitive American English with Indo-European roots',
+          icon: '📘',
+          url: w => 'https://www.ahdictionary.com/word/search.html?q=' + enc(w),
+          embeddable: false
+        },
+        {
+          name: 'YouGlish (American)',
+          desc: 'Hear authentic American pronunciation in real YouTube clips',
+          icon: '🎬',
+          url: w => 'https://youglish.com/pronounce/' + enc(w) + '/english/us',
+          embeddable: true,
+          embedUrl: w => 'https://youglish.com/pronounce/' + enc(w) + '/english/us'
+        },
+        {
+          name: 'WordNet (Princeton)',
+          desc: 'Princeton University’s American lexical semantic network',
+          icon: '🏛️',
+          url: w => 'http://wordnetweb.princeton.edu/perl/webwn?s=' + enc(w),
+          embeddable: true,
+          embedUrl: w => 'http://wordnetweb.princeton.edu/perl/webwn?s=' + enc(w)
+        },
+        {
+          name: 'Wiktionary (US & Global)',
+          desc: 'Free collaborative multilingual dictionary with full IPA',
+          icon: '📖',
+          url: w => 'https://en.wiktionary.org/wiki/' + enc(w),
+          embeddable: true,
+          embedUrl: w => 'https://en.m.wiktionary.org/wiki/' + enc(w)
+        },
+        {
+          name: 'Thesaurus.com',
+          desc: 'Comprehensive synonyms, nuances, and antonyms',
+          icon: '🔠',
+          url: w => 'https://www.thesaurus.com/browse/' + enc(w),
+          embeddable: false
+        },
+        {
+          name: 'Online Etymology Dictionary',
+          desc: 'History, origins, and morphological evolution',
+          icon: '📜',
+          url: w => 'https://www.etymonline.com/word/' + enc(w),
+          embeddable: false
+        },
+        {
+          name: 'Cambridge (American)',
+          desc: 'Clear definitions tailored for American learners',
+          icon: '📗',
+          url: w => 'https://dictionary.cambridge.org/us/dictionary/english/' + enc(w),
+          embeddable: false
+        },
       ],
       ca: [
-        { name: 'DIEC2',             icon: '📘', url: w => https://dlc.iec.cat/Results?DecEntryWord= + E(w) + &CurrentOper=cerca&OperEntry=0 },
-        { name: 'DCVB',              icon: '📕', url: w => https://dcvb.iec.cat/results.asp?Word= + E(w) },
-        { name: 'Viccionari',        icon: '📖', url: w => https://ca.wiktionary.org/wiki/ + enc(w) },
-        { name: 'Optimot',           icon: '🗣️', url: w => https://aplicacions.llengua.gencat.cat/llc/AppJava/index.html?input_cercat= + E(w) + &action=Principal&method=detall },
-        { name: 'Enciclopèdia.cat',  icon: '📚', url: w => https://www.enciclopedia.cat/cerca/gec?search_api_fulltext= + E(w) },
-        { name: 'Softcatalà',        icon: '🔤', url: w => https://www.softcatala.org/diccionari-de-sinonims/paraula/ + enc(w) + / },
+        {
+          name: 'DIEC2',
+          desc: 'Diccionari de l’Institut d’Estudis Catalans',
+          icon: '📘',
+          url: w => 'https://dlc.iec.cat/Results?DecEntryWord=' + encodeURIComponent(w) + '&CurrentOper=cerca&OperEntry=0'
+        },
+        {
+          name: 'DCVB',
+          desc: 'Diccionari català-valencià-balear (Alcover-Moll)',
+          icon: '📕',
+          url: w => 'https://dcvb.iec.cat/results.asp?Word=' + encodeURIComponent(w)
+        },
+        {
+          name: 'Viccionari',
+          desc: 'Diccionari lliure en català',
+          icon: '📖',
+          url: w => 'https://ca.wiktionary.org/wiki/' + enc(w)
+        },
+        {
+          name: 'Optimot',
+          desc: 'Consultes lingüístiques de la Generalitat de Catalunya',
+          icon: '🗣️',
+          url: w => 'https://aplicacions.llengua.gencat.cat/llc/AppJava/index.html?input_cercat=' + encodeURIComponent(w) + '&action=Principal&method=detall'
+        },
+        {
+          name: 'Softcatalà Sinònims',
+          desc: 'Diccionari de sinònims en català',
+          icon: '🔤',
+          url: w => 'https://www.softcatala.org/diccionari-de-sinonims/paraula/' + enc(w) + '/'
+        }
       ],
       caen: [
-        { name: 'Glosbe CA→EN',      icon: '🔄', url: w => https://glosbe.com/ca/en/ + enc(w) },
-        { name: 'Glosbe EN→CA',      icon: '🔁', url: w => https://glosbe.com/en/ca/ + enc(w) },
-        { name: 'Cambridge EN→CA',   icon: '📘', url: w => https://dictionary.cambridge.org/dictionary/english-catalan/ + enc(w) },
-        { name: 'Cambridge CA→EN',   icon: '📙', url: w => https://dictionary.cambridge.org/dictionary/catalan-english/ + enc(w) },
-        { name: 'Wiktionary',        icon: '📖', url: w => https://en.wiktionary.org/wiki/ + enc(w) },
-        { name: 'Google Translate',  icon: '🌐', url: w => https://translate.google.com/?sl=auto&tl=en&text= + E(w) },
-        { name: 'DeepL',             icon: '🤖', url: w => https://www.deepl.com/translator#ca/en/ + E(w) },
-      ],
+        {
+          name: 'Cambridge EN→CA',
+          desc: 'Traducció anglès a català',
+          icon: '📘',
+          url: w => 'https://dictionary.cambridge.org/dictionary/english-catalan/' + enc(w)
+        },
+        {
+          name: 'Cambridge CA→EN',
+          desc: 'Traducció català a anglès',
+          icon: '📙',
+          url: w => 'https://dictionary.cambridge.org/dictionary/catalan-english/' + enc(w)
+        },
+        {
+          name: 'Glosbe CA↔EN',
+          desc: 'Diccionari multilingüe col·laboratiu',
+          icon: '🔄',
+          url: w => 'https://glosbe.com/ca/en/' + enc(w)
+        },
+        {
+          name: 'DeepL',
+          desc: 'Traductor automàtic d’alta precisió',
+          icon: '🤖',
+          url: w => 'https://www.deepl.com/translator#ca/en/' + encodeURIComponent(w)
+        },
+        {
+          name: 'Google Translate',
+          desc: 'Traducció ràpida',
+          icon: '🌐',
+          url: w => 'https://translate.google.com/?sl=auto&tl=en&text=' + encodeURIComponent(w)
+        }
+      ]
     };
-
-    const REF_LABELS = {
-      en: 'Reference dictionaries',
-      ca: 'Diccionaris de referència',
-      caen: 'Translation tools',
-    };
-
-    /* ── In-app API sources (CORS-open APIs only) ──
-     *
-     *  Confirmed working:
-     *   api.dictionaryapi.dev          – English definitions
-     *   en.wiktionary.org/api/rest_v1  – Multilingual definitions
-     *   api.datamuse.com               – English word relationships
-     *   api.mymemory.translated.net    – CA↔EN machine translation
-     *
-     *  Not included (CORS-blocked / bot-protected):
-     *   Cambridge, Merriam-Webster, Longman, Collins, Oxford, Thesaurus.com, Glosbe
-     *   These remain as reference links (open in new tab).
-     */
-
-    function getSources(word) {
-      if (mode === 'en') {
-        return [srcFreeDict(word), srcWiktionary(word, 'en', 'English (Wiktionary)'), srcDatamuse(word)];
-      }
-      if (mode === 'ca') {
-        return [srcWiktionary(word, 'ca', 'Catalan (Viccionari)'), srcMyMemory(word, 'ca', 'en', 'Català → English'), srcMyMemory(word, 'en', 'ca', 'English → Català')];
-      }
-      if (mode === 'caen') {
-        return [
-          srcMyMemory(word, 'ca', 'en', 'Català → English'),
-          srcMyMemory(word, 'en', 'ca', 'English → Català'),
-          srcWiktionary(word, 'ca', 'Catalan (Viccionari)'),
-          srcFreeDict(word),
-          srcWiktionary(word, 'en', 'English (Wiktionary)'),
-        ];
-      }
-      return [];
-    }
-
-    /* ── Source: Free Dictionary API ── */
-    function srcFreeDict(word) {
-      return {
-        id: 'freedict',
-        name: 'Free Dictionary',
-        icon: '📘',
-        extUrl: 'https://www.dictionaryapi.dev/',
-        fetch: async () => {
-          const res = await fetch(https://api.dictionaryapi.dev/api/v2/entries/en/ + E(word));
-          if (!res.ok) return null;
-          const data = await res.json();
-          const entry = data[0];
-          if (!entry) return null;
-          const phonetic = entry.phonetic || (entry.phonetics || []).find(p => p.text)?.text || '';
-          const audio = (entry.phonetics || []).find(p => p.audio)?.audio || '';
-          const defs = [];
-          for (const m of (entry.meanings || []).slice(0, 3)) {
-            for (const d of (m.definitions || []).slice(0, 2)) {
-              defs.push({ pos: m.partOfSpeech, text: d.definition, example: d.example || '' });
-            }
-          }
-          const synonyms = (entry.meanings || []).flatMap(m => m.synonyms || []).slice(0, 8);
-          return { phonetic, audio, defs, synonyms };
-        },
-        render(d) {
-          if (!d) return null;
-          let h = '';
-          if (d.phonetic || d.audio) {
-            h += '<div class="phonetic-line">' + escHtml(d.phonetic);
-            if (d.audio) h += ' <button class="audio-btn" onclick="playAudio(\'' + escAttr(d.audio) + '\')" title="Pronunciation">🔊</button>';
-            h += '</div>';
-          }
-          for (const def of d.defs) {
-            h += '<div class="def-block">';
-            if (def.pos) h += '<span class="pos-tag">' + escHtml(def.pos) + '</span>';
-            h += '<div class="def-text">' + escHtml(def.text) + '</div>';
-            if (def.example) h += '<div class="def-example">"' + escHtml(def.example) + '"</div>';
-            h += '</div>';
-          }
-          if (d.synonyms.length) {
-            h += '<div class="word-row">';
-            for (const s of d.synonyms) h += '<span class="word-chip" onclick="search(\'' + escAttr(s) + '\')">' + escHtml(s) + '</span>';
-            h += '</div>';
-          }
-          return h;
-        }
-      };
-    }
-
-    /* ── Source: Wiktionary REST API ── */
-    function srcWiktionary(word, langKey, label) {
-      return {
-        id: 'wikt-' + langKey,
-        name: label,
-        icon: langKey === 'ca' ? '📖' : '📚',
-        extUrl: 'https://en.wiktionary.org/wiki/' + enc(word),
-        fetch: async () => {
-          const res = await fetch('https://en.wiktionary.org/api/rest_v1/page/definition/' + E(word));
-          if (!res.ok) return null;
-          const data = await res.json();
-          const sections = data[langKey] || null;
-          if (!sections || !sections.length) return null;
-          const items = [];
-          for (const sec of sections.slice(0, 3)) {
-            for (const d of (sec.definitions || []).slice(0, 2)) {
-              items.push({ pos: sec.partOfSpeech, html: sanitizeHtml(d.definition) });
-            }
-          }
-          return items.length ? items : null;
-        },
-        render(items) {
-          if (!items) return null;
-          let h = '';
-          for (const item of items) {
-            h += '<div class="def-block">';
-            if (item.pos) h += '<span class="pos-tag">' + escHtml(item.pos) + '</span>';
-            h += '<div class="def-text">' + item.html + '</div></div>';
-          }
-          return h;
-        }
-      };
-    }
-
-    /* ── Source: Datamuse API ── */
-    function srcDatamuse(word) {
-      return {
-        id: 'datamuse',
-        name: 'Datamuse',
-        icon: '🧠',
-        extUrl: 'https://www.datamuse.com/',
-        fetch: async () => {
-          const [ml, sl, ant, syn] = await Promise.all([
-            fetch('https://api.datamuse.com/words?ml=' + E(word) + '&max=8').then(r => r.ok ? r.json() : []).catch(() => []),
-            fetch('https://api.datamuse.com/words?sl=' + E(word) + '&max=6').then(r => r.ok ? r.json() : []).catch(() => []),
-            fetch('https://api.datamuse.com/words?rel_ant=' + E(word) + '&max=6').then(r => r.ok ? r.json() : []).catch(() => []),
-            fetch('https://api.datamuse.com/words?rel_syn=' + E(word) + '&max=8').then(r => r.ok ? r.json() : []).catch(() => []),
-          ]);
-          const groups = [
-            { label: 'Means like',  words: ml.map(x => x.word) },
-            { label: 'Sounds like', words: sl.map(x => x.word) },
-            { label: 'Synonyms',    words: syn.map(x => x.word) },
-            { label: 'Antonyms',    words: ant.map(x => x.word) },
-          ].filter(g => g.words.length);
-          return groups.length ? groups : null;
-        },
-        render(groups) {
-          if (!groups) return null;
-          let h = '';
-          for (const g of groups) {
-            h += '<div class="def-block"><span class="pos-tag">' + escHtml(g.label) + '</span><div class="word-row">';
-            for (const w of g.words) h += '<span class="word-chip" onclick="search(\'' + escAttr(w) + '\')">' + escHtml(w) + '</span>';
-            h += '</div></div>';
-          }
-          return h;
-        }
-      };
-    }
-
-    /* ── Source: MyMemory Translation API ── */
-    function srcMyMemory(word, from, to, label) {
-      return {
-        id: 'mm-' + from + to,
-        name: label,
-        icon: from === 'ca' ? '🔄' : '🔁',
-        extUrl: 'https://mymemory.translated.net/?q=' + E(word) + '&langpair=' + from + '|' + to,
-        fetch: async () => {
-          const res = await fetch('https://api.mymemory.translated.net/get?q=' + E(word) + '&langpair=' + from + '|' + to);
-          if (!res.ok) return null;
-          const data = await res.json();
-          if (data.responseStatus !== 200) return null;
-          const main = data.responseData?.translatedText;
-          if (!main) return null;
-          const alts = [...new Set(
-            (data.matches || [])
-              .map(m => m.translation?.trim())
-              .filter(t => t && t.toLowerCase() !== main.toLowerCase())
-              .slice(0, 6)
-          )];
-          return { main, alts };
-        },
-        render(d) {
-          if (!d) return null;
-          let h = '<div class="translation-pair"><span class="translation-arrow">→</span><span class="translation-main">' + escHtml(d.main) + '</span></div>';
-          if (d.alts.length) {
-            h += '<div class="word-row">';
-            for (const a of d.alts) h += '<span class="word-chip" onclick="search(\'' + escAttr(a) + '\')">' + escHtml(a) + '</span>';
-            h += '</div>';
-          }
-          return h;
-        }
-      };
-    }
 
     /* ═══════════════════════════════════════════════════
-       STATE
+       DOM HELPER UTILITIES
     ═══════════════════════════════════════════════════ */
-    let mode = localStorage.getItem('vocab-mode') || 'en';
-    let currentWord = '';
-    let searchSeq = 0;
+    const $ = id => document.getElementById(id);
+    const $$ = sel => document.querySelectorAll(sel);
+    const enc = w => encodeURIComponent((w || '').trim().toLowerCase().replace(/\s+/g, '-'));
 
-    const $ = s => document.querySelector(s);
-    const } = s => document.querySelectorAll(s);
-    const E = encodeURIComponent;
-    function enc(w) { return encodeURIComponent(w.trim().toLowerCase().replace(/\s+/g, '-')); }
+    function escHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = String(str || '');
+      return div.innerHTML;
+    }
+
+    function escAttr(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function showToast(msg) {
+      const toast = $('toastMsg');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
 
     /* ═══════════════════════════════════════════════════
-       INIT
+       INITIALIZATION & EVENT LISTENERS
     ═══════════════════════════════════════════════════ */
     function init() {
-      applyMode(mode, false);
+      // Setup Theme
+      initTheme();
 
-      const hash = decodeURIComponent(location.hash.slice(1));
-      if (hash) {
-        const parts = hash.split('|');
-        if (parts.length === 2 && REF[parts[0]]) {
-          applyMode(parts[0], false);
-          currentWord = parts[1];
-        } else {
-          currentWord = hash;
-        }
-        #searchInput.value = currentWord;
-        doSearch(currentWord);
-      }
+      // Render Recent searches
+      renderRecentSearches();
 
-      #searchBtn.addEventListener('click', () => doSearch(#searchInput.value));
-      #searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(#searchInput.value); });
-      #openAllBtn.addEventListener('click', openAll);
+      // Update saved count badge
+      updateSavedBadge();
 
-      }('.mode-tab').forEach(tab => tab.addEventListener('click', () => {
-        applyMode(tab.dataset.mode, true);
-        if (currentWord) doSearch(currentWord);
-      }));
+      // Apply initial mode
+      applyMode(currentMode, false);
 
-      document.addEventListener('keydown', e => {
-        if (e.key === '/' && document.activeElement !== #searchInput) {
-          e.preventDefault();
-          #searchInput.focus();
-          #searchInput.select();
-        }
-        if (e.key === 'Escape') #searchInput.blur();
+      // URL Hash Routing
+      handleHashChange();
+      window.addEventListener('hashchange', handleHashChange);
+
+      // Search input clear button visibility
+      const searchInput = $('searchInput');
+      const clearBtn = $('clearSearchBtn');
+      searchInput.addEventListener('input', () => {
+        clearBtn.style.display = searchInput.value ? 'block' : 'none';
       });
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        searchInput.focus();
+      });
+
+      // Mode tabs click handlers
+      $$('.mode-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          applyMode(tab.dataset.mode, true);
+          if (currentWord) doSearch(currentWord);
+        });
+      });
+
+      // Global Keyboard Shortcuts
+      document.addEventListener('keydown', e => {
+        if (e.key === '/' && document.activeElement !== searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+        if (e.key === 'Escape') {
+          closeEmbedModal();
+          $('drawerBackdrop').classList.remove('open');
+          searchInput.blur();
+        }
+      });
+
+      // Drawer trigger
+      $('savedWordsBtn').addEventListener('click', toggleSavedDrawer);
+      $('themeToggleBtn').addEventListener('click', toggleTheme);
     }
 
-    function applyMode(m, save) {
-      mode = m;
-      if (save) localStorage.setItem('vocab-mode', m);
-      }('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+    function handleHashChange() {
+      const hash = decodeURIComponent(location.hash.slice(1));
+      if (!hash) return;
+
+      const parts = hash.split('|');
+      if (parts.length === 2 && REFERENCES[parts[0]]) {
+        applyMode(parts[0], false);
+        currentWord = parts[1];
+      } else {
+        currentWord = hash;
+      }
+
+      $('searchInput').value = currentWord;
+      $('clearSearchBtn').style.display = currentWord ? 'block' : 'none';
+      doSearch(currentWord);
+    }
+
+    function handleFormSubmit(e) {
+      if (e) e.preventDefault();
+      const val = $('searchInput').value.trim();
+      if (val) doSearch(val);
+    }
+
+    function applyMode(mode, save) {
+      currentMode = mode;
+      if (save) localStorage.setItem('vocab-mode', mode);
+
+      $$('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+
+      // Update placeholder
+      const searchInput = $('searchInput');
+      if (mode === 'en') {
+        searchInput.placeholder = 'Search American English definition, word, or idiom…';
+      } else if (mode === 'ca') {
+        searchInput.placeholder = 'Cerca una paraula o expressió en català…';
+      } else {
+        searchInput.placeholder = 'Traducció català ↔ anglès (type a word)…';
+      }
+
+      // Update reference section title
+      if (mode === 'en') {
+        $('refSectionTitle').innerHTML = '🇺🇸 Authoritative American Dictionaries & Pronunciation References';
+      } else if (mode === 'ca') {
+        $('refSectionTitle').innerHTML = '📘 Diccionaris i eines de referència en català';
+      } else {
+        $('refSectionTitle').innerHTML = '🔄 Eines i recursos de traducció Català ↔ Anglès';
+      }
     }
 
     function goHome() {
       document.body.className = 'idle';
       currentWord = '';
-      searchSeq++;
-      #searchInput.value = '';
-      #sourceGrid.innerHTML = '';
-      #refGrid.innerHTML = '';
+      $('searchInput').value = '';
+      $('clearSearchBtn').style.display = 'none';
       history.replaceState(null, '', location.pathname);
-      #searchInput.focus();
+      $('searchInput').focus();
     }
 
-    function doSearch(word) {
-      word = word.trim();
-      if (!word) return;
-      currentWord = word;
-      document.body.className = 'has-results';
-      location.hash = mode + '|' + E(word);
-      renderRefGrid(word);
-      renderSources(word);
-    }
-
-    function search(word) {
-      #searchInput.value = word;
+    function searchWord(word) {
+      $('searchInput').value = word;
+      $('clearSearchBtn').style.display = 'block';
       doSearch(word);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* ── Reference grid ── */
-    function renderRefGrid(word) {
-      #refLabel.textContent = REF_LABELS[mode] || 'Reference dictionaries';
-      #refGrid.innerHTML = (REF[mode] || []).map(r =>
-        '<a class="ref-card" href="' + escAttr(r.url(word)) + '" target="_blank" rel="noopener noreferrer">' +
-        '<span class="ref-icon">' + r.icon + '</span>' +
-        '<span class="ref-name">' + escHtml(r.name) + '</span>' +
-        '<span class="ref-arrow">→</span></a>'
-      ).join('');
+    /* ═══════════════════════════════════════════════════
+       THEME CONTROLLER
+    ═══════════════════════════════════════════════════ */
+    function initTheme() {
+      const savedTheme = localStorage.getItem('vocab-theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
     }
 
-    function openAll() {
-      (REF[mode] || []).forEach(r => window.open(r.url(currentWord), '_blank', 'noopener'));
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('vocab-theme', next);
+      showToast(`Switched to ${next} mode`);
     }
 
-    /* ── Source cards ── */
-    async function renderSources(word) {
-      const seq = ++searchSeq;
-      const sources = getSources(word);
-      const grid = #sourceGrid;
+    /* ═══════════════════════════════════════════════════
+       VIEW SWITCHING (Smart Overview vs Sources vs Reference)
+    ═══════════════════════════════════════════════════ */
+    function switchView(viewName) {
+      currentActiveView = viewName;
+      $$('.content-tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
 
-      grid.innerHTML = sources.map((s, i) =>
-        '<div id="sc' + i + '" class="source-card">' +
-        cardHead(s, 'loading') +
-        '<div class="card-body"><div class="card-loading"><div class="spinner"></div>Loading…</div></div>' +
-        '</div>'
-      ).join('');
+      $('unifiedView').classList.toggle('active', viewName === 'unified');
+      $('sourcesView').classList.toggle('active', viewName === 'sources');
+      $('referenceView').classList.toggle('active', viewName === 'reference');
+    }
 
-      await Promise.allSettled(sources.map(async (src, i) => {
-        let html = null;
-        try {
-          const data = await src.fetch();
-          html = src.render(data);
-        } catch (_) {}
+    function setSpeechSpeed(speed) {
+      currentSpeechRate = speed;
+      $$('.speed-btn').forEach(btn => btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed));
+      showToast(`Pronunciation speed: ${speed}x`);
+    }
 
-        if (seq !== searchSeq) return;
+    /* ═══════════════════════════════════════════════════
+       CORE SEARCH & AGGREGATION ENGINE
+    ═══════════════════════════════════════════════════ */
+    async function doSearch(rawWord) {
+      const word = rawWord.trim();
+      if (!word) return;
 
-        const card = document.getElementById('sc' + i);
-        if (!card) return;
+      currentWord = word;
+      searchSequence++;
+      const seq = searchSequence;
 
-        if (html) {
-          card.innerHTML =
-            cardHead(src, 'ok') +
-            '<div class="card-body">' + html + '</div>' +
-            '<div class="card-foot"><a class="ext-link" href="' + escAttr(src.extUrl) + '" target="_blank" rel="noopener noreferrer">Open source ↗</a></div>';
-        } else {
-          card.innerHTML =
-            cardHead(src, 'empty') +
-            '<div class="card-body"><div class="card-empty">No result for this word.</div></div>' +
-            '<div class="card-foot"><a class="ext-link" href="' + escAttr(src.extUrl) + '" target="_blank" rel="noopener noreferrer">Open source ↗</a></div>';
+      document.body.className = 'has-results';
+      location.hash = currentMode + '|' + encodeURIComponent(word);
+
+      // Save to recent searches
+      addRecentSearch(word);
+
+      // Update hero card title
+      $('heroWordText').textContent = word;
+      $('heroSyllables').textContent = '';
+      $('heroFrequency').style.display = 'none';
+      $('pronunciationRow').innerHTML = '<div class="loading-state-box" style="padding: 0.5rem 0;"><div class="spinner"></div> Fetching pronunciations…</div>';
+      $('intuitiveBox').style.display = 'none';
+
+      // Update Saved/Starred state
+      updateStarButtonState();
+
+      // Render References tab immediately
+      renderReferenceGrid(word);
+
+      // Render placeholders for Sources tab
+      renderSourcePlaceholders(word);
+
+      // Fetch data based on mode
+      if (currentMode === 'en') {
+        await executeEnglishAggregation(word, seq);
+      } else if (currentMode === 'ca') {
+        await executeCatalanAggregation(word, seq);
+      } else {
+        await executeBilingualAggregation(word, seq);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       ENGLISH AGGREGATION & AMERICAN PRIORITIZATION
+    ═══════════════════════════════════════════════════ */
+    async function executeEnglishAggregation(word, seq) {
+      // Parallel fetch from all free APIs
+      const [freeDictRes, datamuseWordRes, datamuseSynRes, datamuseAntRes, datamuseRelRes, datamuseRhyRes, datamuseColRes, wiktionaryRes, wikiSummaryRes] = await Promise.allSettled([
+        // 1. Free Dictionary API (rich phonetics, US audio, parts of speech, examples)
+        fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
+
+        // 2. Datamuse Base (syllables, tags, frequency, definitions)
+        fetch('https://api.datamuse.com/words?sp=' + encodeURIComponent(word) + '&md=dpsf&max=1').then(r => r.ok ? r.json() : null).catch(() => null),
+
+        // 3. Datamuse Synonyms
+        fetch('https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(word) + '&max=16').then(r => r.ok ? r.json() : []).catch(() => []),
+
+        // 4. Datamuse Antonyms
+        fetch('https://api.datamuse.com/words?rel_ant=' + encodeURIComponent(word) + '&max=12').then(r => r.ok ? r.json() : []).catch(() => []),
+
+        // 5. Datamuse Means Like (Semantic associations)
+        fetch('https://api.datamuse.com/words?ml=' + encodeURIComponent(word) + '&max=14').then(r => r.ok ? r.json() : []).catch(() => []),
+
+        // 6. Datamuse Rhymes
+        fetch('https://api.datamuse.com/words?rel_rhy=' + encodeURIComponent(word) + '&max=12').then(r => r.ok ? r.json() : []).catch(() => []),
+
+        // 7. Datamuse Collocations / Words frequently modifying or following
+        fetch('https://api.datamuse.com/words?rel_trg=' + encodeURIComponent(word) + '&max=12').then(r => r.ok ? r.json() : []).catch(() => []),
+
+        // 8. Wiktionary REST API (Definitions, etymology)
+        fetch('https://en.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
+
+        // 9. Wikipedia Summary API (Intuitive Encyclopedic Context)
+        fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
+      ]);
+
+      if (seq !== searchSequence) return;
+
+      const freeDictData = freeDictRes.value;
+      const datamuseData = (datamuseWordRes.value && datamuseWordRes.value[0]) || null;
+      const synonymsList = (datamuseSynRes.value || []).map(x => x.word);
+      const antonymsList = (datamuseAntRes.value || []).map(x => x.word);
+      const relatedList = (datamuseRelRes.value || []).map(x => x.word);
+      const rhymesList = (datamuseRhyRes.value || []).map(x => x.word);
+      const collocationsList = (datamuseColRes.value || []).map(x => x.word);
+      const wiktData = wiktionaryRes.value;
+      const wikiSummary = wikiSummaryRes.value;
+
+      // Extract Pronunciations: STRICT AMERICAN ENGLISH PRIORITIZATION
+      const pronunciations = extractAmericanAndBritishPronunciation(word, freeDictData);
+      renderPronunciationPills(pronunciations, word);
+
+      // Syllables & Frequency
+      if (datamuseData) {
+        if (datamuseData.numSyllables) {
+          $('heroSyllables').textContent = `· ${datamuseData.numSyllables} syllable${datamuseData.numSyllables > 1 ? 's' : ''}`;
         }
-      }));
-    }
+        if (datamuseData.tags) {
+          const freqTag = datamuseData.tags.find(t => t.startsWith('f:'));
+          if (freqTag) {
+            const freqVal = parseFloat(freqTag.replace('f:', ''));
+            const badge = $('heroFrequency');
+            badge.style.display = 'inline-block';
+            if (freqVal > 15) {
+              badge.textContent = 'Very Common';
+            } else if (freqVal > 2) {
+              badge.textContent = 'Common Vocabulary';
+            } else {
+              badge.textContent = 'Advanced / Literary';
+            }
+          }
+        }
+      }
 
-    function cardHead(src, status) {
-      const cls = status === 'ok' ? 'badge ok' : 'badge';
-      const label = status === 'ok' ? 'Live' : status === 'loading' ? 'Loading…' : 'No result';
-      return '<div class="card-head"><div class="card-identity"><div class="card-icon">' + src.icon + '</div>' +
-        '<div class="card-name">' + escHtml(src.name) + '</div></div>' +
-        '<span class="' + cls + '">' + label + '</span></div>';
-    }
+      // Synthesize Intuitive Explanation
+      const intuitiveExplanation = generateIntuitiveExplanation(word, freeDictData, datamuseData, wikiSummary);
+      if (intuitiveExplanation) {
+        $('intuitiveText').textContent = intuitiveExplanation.text;
+        $('intuitiveContext').textContent = intuitiveExplanation.context || '';
+        $('intuitiveBox').style.display = 'flex';
+      } else {
+        $('intuitiveBox').style.display = 'none';
+      }
 
-    /* ── Utilities ── */
-    function playAudio(url) { new Audio(url).play().catch(() => {}); }
+      // Render Synthesized Definitions
+      renderDefinitionsGroup(freeDictData, wiktData, datamuseData);
 
-    function escHtml(s) {
-      const d = document.createElement('div');
-      d.textContent = String(s || '');
-      return d.innerHTML;
-    }
+      // Render Sidebar Brain Cards
+      renderWordChipsCloud('synonymsCard', 'synonymsCloud', mergeUnique(extractFreeDictSynonyms(freeDictData), synonymsList), false);
+      renderWordChipsCloud('antonymsCard', 'antonymsCloud', mergeUnique(extractFreeDictAntonyms(freeDictData), antonymsList), true);
+      renderWordChipsCloud('relatedCard', 'relatedCloud', relatedList, false);
+      renderWordChipsCloud('rhymesCard', 'rhymesCloud', rhymesList, false);
+      renderWordChipsCloud('collocationsCard', 'collocationsCloud', collocationsList, false);
 
-    function escAttr(s) {
-      return String(s || '')
-        .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
+      // Etymology
+      renderEtymology(freeDictData, wiktData);
 
-    function sanitizeHtml(s) {
-      if (!s) return '';
-      const tmp = document.createElement('div');
-      tmp.innerHTML = s;
-      tmp.querySelectorAll('script,style,iframe,object,embed,form,input').forEach(el => el.remove());
-      tmp.querySelectorAll('*').forEach(el => {
-        [...el.attributes].forEach(a => {
-          if (a.name.startsWith('on') || a.name === 'style') el.removeAttribute(a.name);
-        });
-        if (el.tagName === 'A') { el.setAttribute('target', '_blank'); el.setAttribute('rel', 'noopener noreferrer'); }
+      // Render Individual Free Sources Cards Tab
+      renderSourcesCardsTab(word, {
+        freeDict: freeDictData,
+        wiktionary: wiktData,
+        datamuse: { datamuseData, synonymsList, antonymsList, relatedList, rhymesList },
+        wikipedia: wikiSummary
       });
-      return tmp.innerHTML;
+
+      currentWordData = { word, freeDictData, intuitiveExplanation };
     }
 
+    /* ═══════════════════════════════════════════════════
+       AMERICAN ENGLISH PRONUNCIATION EXTRACTOR
+    ═══════════════════════════════════════════════════ */
+    function extractAmericanAndBritishPronunciation(word, freeDict) {
+      let usPhonetic = '';
+      let usAudio = '';
+      let ukPhonetic = '';
+      let ukAudio = '';
+      let generalPhonetic = '';
+
+      if (freeDict && freeDict[0]) {
+        const entry = freeDict[0];
+        generalPhonetic = entry.phonetic || '';
+
+        const phonetics = entry.phonetics || [];
+        for (const p of phonetics) {
+          const audioUrl = p.audio || '';
+          const text = p.text || '';
+
+          // Look for US Audio / Rhotic IPA
+          if (audioUrl.includes('-us.mp3') || audioUrl.includes('/us/') || audioUrl.includes('en-us') || audioUrl.includes('en_us')) {
+            usAudio = audioUrl;
+            if (text) usPhonetic = text;
+          } else if (audioUrl.includes('-uk.mp3') || audioUrl.includes('/uk/') || audioUrl.includes('-au.mp3')) {
+            ukAudio = audioUrl;
+            if (text) ukPhonetic = text;
+          } else if (audioUrl && !usAudio) {
+            // First audio fallback
+            usAudio = audioUrl;
+          }
+
+          // Rhotic American IPA identification (contains ɹ or r-colored vowels)
+          if (text && /[ɹ]/.test(text) && !usPhonetic) {
+            usPhonetic = text;
+          }
+        }
+
+        // Fallback for phonetic texts
+        if (!usPhonetic) {
+          const pWithText = phonetics.find(p => p.text);
+          usPhonetic = pWithText ? pWithText.text : generalPhonetic;
+        }
+      }
+
+      return {
+        us: {
+          label: '🇺🇸 American (US)',
+          phonetic: usPhonetic || generalPhonetic || `/${word}/`,
+          audio: usAudio,
+          isAmerican: true
+        },
+        uk: {
+          label: '🇬🇧 British (UK)',
+          phonetic: ukPhonetic || (ukAudio ? usPhonetic : ''),
+          audio: ukAudio,
+          isAmerican: false
+        }
+      };
+    }
+
+    function renderPronunciationPills(pron, word) {
+      const container = $('pronunciationRow');
+      let html = '';
+
+      // 1. Primary American English Pill
+      html += `
+        <div class="accent-pill us-primary">
+          <span class="flag-label">🇺🇸 General American</span>
+          <span class="ipa-text">${escHtml(pron.us.phonetic)}</span>
+          <button class="audio-play-btn" onclick="playAmericanAudio('${escAttr(pron.us.audio)}', '${escAttr(word)}')" title="Listen to American pronunciation">
+            🔊
+          </button>
+        </div>
+      `;
+
+      // 2. Secondary British English Pill (if phonetic or audio exists)
+      if (pron.uk.audio || (pron.uk.phonetic && pron.uk.phonetic !== pron.us.phonetic)) {
+        html += `
+          <div class="accent-pill uk-secondary">
+            <span class="flag-label">🇬🇧 British (RP)</span>
+            <span class="ipa-text">${escHtml(pron.uk.phonetic || pron.us.phonetic)}</span>
+            <button class="audio-play-btn" onclick="playAudioFile('${escAttr(pron.uk.audio || '')}', '${escAttr(word)}', 'en-GB')" title="Listen to British pronunciation">
+              🔊
+            </button>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       AUDIO PLAYER & AMERICAN WEB SPEECH SYNTHESIS
+    ═══════════════════════════════════════════════════ */
+    function playAmericanAudio(audioUrl, word) {
+      if (audioUrl) {
+        playAudioFile(audioUrl, word, 'en-US');
+      } else {
+        // High fidelity speech synthesis fallback
+        speakWebSpeech(word, 'en-US');
+      }
+    }
+
+    function playAudioFile(audioUrl, fallbackWord, langCode) {
+      if (currentlyPlayingAudio) {
+        currentlyPlayingAudio.pause();
+        currentlyPlayingAudio = null;
+      }
+
+      if (!audioUrl) {
+        speakWebSpeech(fallbackWord, langCode || 'en-US');
+        return;
+      }
+
+      try {
+        const audio = new Audio(audioUrl);
+        audio.playbackRate = currentSpeechRate;
+        currentlyPlayingAudio = audio;
+
+        audio.play().catch(err => {
+          console.warn('Audio playback error, falling back to Web Speech:', err);
+          speakWebSpeech(fallbackWord, langCode || 'en-US');
+        });
+      } catch {
+        speakWebSpeech(fallbackWord, langCode || 'en-US');
+      }
+    }
+
+    function speakWebSpeech(word, langCode) {
+      if (!('speechSynthesis' in window)) {
+        showToast('Speech synthesis is not supported on this browser.');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = langCode || 'en-US';
+      utterance.rate = currentSpeechRate;
+
+      // Select high quality US voice if available
+      const voices = window.speechSynthesis.getVoices();
+      if (langCode === 'en-US') {
+        const usVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.name.includes('David') || v.name.includes('Mark')));
+        if (usVoice) utterance.voice = usVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+      showToast(`Playing ${langCode === 'en-US' ? 'American' : 'British'} pronunciation (${currentSpeechRate}x)`);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       INTUITIVE EXPLANATION GENERATOR
+    ═══════════════════════════════════════════════════ */
+    function generateIntuitiveExplanation(word, freeDict, datamuse, wiki) {
+      // 1. Check if Wikipedia summary has a clean sentence
+      if (wiki && wiki.extract && !wiki.extract.includes('may refer to:')) {
+        const firstSentence = wiki.extract.split(/(?<=[.?!])\s+/)[0];
+        if (firstSentence && firstSentence.length > 25 && firstSentence.length < 280) {
+          return {
+            text: firstSentence,
+            context: wiki.description ? `Context: ${wiki.description}` : 'General American usage'
+          };
+        }
+      }
+
+      // 2. Check Free Dictionary definitions
+      if (freeDict && freeDict[0]?.meanings?.length) {
+        const firstMeaning = freeDict[0].meanings[0];
+        const firstDef = firstMeaning.definitions[0]?.definition;
+        if (firstDef) {
+          // Clean up technical artifacts
+          const cleanDef = firstDef.replace(/^(\(.*\)|\[.*\])\s*/, '');
+          return {
+            text: cleanDef,
+            context: `Part of Speech: ${firstMeaning.partOfSpeech.toUpperCase()}`
+          };
+        }
+      }
+
+      // 3. Datamuse definitions
+      if (datamuse && datamuse.defs?.length) {
+        const rawDef = datamuse.defs[0];
+        const parts = rawDef.split('\t');
+        if (parts.length === 2) {
+          return {
+            text: parts[1].trim(),
+            context: 'American Lexical Database'
+          };
+        }
+      }
+
+      return null;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       DEFINITIONS RENDERER (Grouped by Part of Speech)
+    ═══════════════════════════════════════════════════ */
+    function renderDefinitionsGroup(freeDict, wikt, datamuse) {
+      const container = $('definitionsContainer');
+      let html = '';
+
+      if (freeDict && freeDict[0]?.meanings?.length) {
+        const entry = freeDict[0];
+
+        for (const meaning of entry.meanings) {
+          const pos = (meaning.partOfSpeech || 'other').toLowerCase();
+          const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
+          const definitions = meaning.definitions || [];
+
+          html += `
+            <div class="pos-block">
+              <div class="pos-header">
+                <span class="pos-badge ${badgeClass}">${escHtml(pos)}</span>
+                <span class="pos-count">${definitions.length} definition${definitions.length > 1 ? 's' : ''}</span>
+              </div>
+              <div class="definitions-list">
+          `;
+
+          definitions.forEach((d, idx) => {
+            let exampleHtml = '';
+            if (d.example) {
+              // Highlight the searched word in example sentence
+              const escapedExample = escHtml(d.example);
+              const highlighted = highlightWordInText(escapedExample, currentWord);
+              exampleHtml = `<div class="def-example-quote">“${highlighted}”</div>`;
+            }
+
+            let synsHtml = '';
+            if (d.synonyms && d.synonyms.length) {
+              synsHtml = `
+                <div class="def-sub-synonyms">
+                  <span class="sub-syn-label">Synonyms:</span>
+                  ${d.synonyms.slice(0, 6).map(s => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(s)}')">${escHtml(s)}</button>`).join('')}
+                </div>
+              `;
+            }
+
+            html += `
+              <div class="def-item">
+                <div class="def-num">${idx + 1}</div>
+                <div class="def-body">
+                  <div class="def-meaning">${escHtml(d.definition)}</div>
+                  ${exampleHtml}
+                  ${synsHtml}
+                </div>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+          `;
+        }
+      } else if (wikt && wikt.en && wikt.en.length) {
+        // Fallback to Wiktionary entries
+        for (const section of wikt.en) {
+          const pos = (section.partOfSpeech || 'definition').toLowerCase();
+          const badgeClass = ['noun', 'verb', 'adjective', 'adverb'].includes(pos) ? pos : 'other';
+          const definitions = section.definitions || [];
+
+          html += `
+            <div class="pos-block">
+              <div class="pos-header">
+                <span class="pos-badge ${badgeClass}">${escHtml(pos)}</span>
+                <span class="pos-count">${definitions.length} definition${definitions.length > 1 ? 's' : ''}</span>
+              </div>
+              <div class="definitions-list">
+          `;
+
+          definitions.forEach((d, idx) => {
+            html += `
+              <div class="def-item">
+                <div class="def-num">${idx + 1}</div>
+                <div class="def-body">
+                  <div class="def-meaning">${sanitizeHtml(d.definition)}</div>
+                </div>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+          `;
+        }
+      } else if (datamuse && datamuse.defs?.length) {
+        // Datamuse definitions
+        html += `
+          <div class="pos-block">
+            <div class="pos-header">
+              <span class="pos-badge other">Dictionary</span>
+            </div>
+            <div class="definitions-list">
+        `;
+
+        datamuse.defs.forEach((raw, idx) => {
+          const [pos, defText] = raw.split('\t');
+          html += `
+            <div class="def-item">
+              <div class="def-num">${idx + 1}</div>
+              <div class="def-body">
+                <div class="def-meaning">
+                  <span class="def-register-tag">${escHtml(pos || '')}</span>
+                  ${escHtml(defText || raw)}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      } else {
+        html = `
+          <div class="pos-block">
+            <p style="color: var(--muted); padding: 1rem 0;">No in-depth definitions found for “${escHtml(currentWord)}”. You can explore it via the external American references tab.</p>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function highlightWordInText(text, word) {
+      if (!word) return text;
+      const regex = new RegExp(`\\b(${word}[a-z]*)\\b`, 'gi');
+      return text.replace(regex, '<strong style="color: var(--primary);">$1</strong>');
+    }
+
+    /* ═══════════════════════════════════════════════════
+       EXPLORER SIDEBAR: SYNONYMS, ANTONYMS, RHYMES, ETYMOLOGY
+    ═══════════════════════════════════════════════════ */
+    function renderWordChipsCloud(cardId, cloudId, wordsList, isAntonym) {
+      const card = $(cardId);
+      const cloud = $(cloudId);
+      if (!wordsList || !wordsList.length) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'flex';
+      const chipClass = isAntonym ? 'clickable-word-chip antonym-chip' : 'clickable-word-chip';
+      cloud.innerHTML = wordsList.slice(0, 14).map(w =>
+        `<button class="${chipClass}" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`
+      ).join('');
+    }
+
+    function renderEtymology(freeDict, wikt) {
+      const card = $('etymologyCard');
+      const content = $('etymologyContent');
+
+      let text = '';
+      if (freeDict && freeDict[0]?.origin) {
+        text = freeDict[0].origin;
+      }
+
+      if (text) {
+        card.style.display = 'flex';
+        content.innerHTML = `<p>${escHtml(text)}</p>`;
+      } else {
+        card.style.display = 'none';
+      }
+    }
+
+    function extractFreeDictSynonyms(freeDict) {
+      if (!freeDict || !freeDict[0]) return [];
+      const syns = [];
+      (freeDict[0].meanings || []).forEach(m => {
+        (m.synonyms || []).forEach(s => syns.push(s));
+        (m.definitions || []).forEach(d => {
+          (d.synonyms || []).forEach(s => syns.push(s));
+        });
+      });
+      return [...new Set(syns)];
+    }
+
+    function extractFreeDictAntonyms(freeDict) {
+      if (!freeDict || !freeDict[0]) return [];
+      const ants = [];
+      (freeDict[0].meanings || []).forEach(m => {
+        (m.antonyms || []).forEach(a => ants.push(a));
+        (m.definitions || []).forEach(d => {
+          (d.antonyms || []).forEach(a => ants.push(a));
+        });
+      });
+      return [...new Set(ants)];
+    }
+
+    function mergeUnique(arr1, arr2) {
+      return [...new Set([...arr1, ...arr2])].filter(Boolean);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       VIEW 2: FREE EMBEDDABLE SOURCES CARDS
+    ═══════════════════════════════════════════════════ */
+    function renderSourcePlaceholders(word) {
+      const grid = $('sourcesGrid');
+      const sources = [
+        { name: 'Free Dictionary API', icon: '📘' },
+        { name: 'Wiktionary (Multilingual)', icon: '📖' },
+        { name: 'Datamuse Lexical Engine', icon: '🧠' },
+        { name: 'Wikipedia Knowledge Summary', icon: '🌐' }
+      ];
+
+      grid.innerHTML = sources.map(s => `
+        <div class="source-card">
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">${s.icon}</span>
+              <span class="source-card-title">${s.name}</span>
+            </div>
+            <span class="source-status-badge">Loading…</span>
+          </div>
+          <div class="source-card-body">
+            <div class="loading-state-box"><div class="spinner"></div> Fetching source data…</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSourcesCardsTab(word, data) {
+      const grid = $('sourcesGrid');
+      let cardsHtml = '';
+
+      // 1. Free Dictionary Card
+      const fd = data.freeDict && data.freeDict[0];
+      cardsHtml += `
+        <div class="source-card">
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">📘</span>
+              <span class="source-card-title">Free Dictionary API</span>
+            </div>
+            <span class="source-status-badge ${fd ? 'live' : ''}">${fd ? 'Live Data' : 'No result'}</span>
+          </div>
+          <div class="source-card-body">
+            ${fd ? `
+              <div>
+                <strong>Phonetic:</strong> ${escHtml(fd.phonetic || (fd.phonetics && fd.phonetics[0]?.text) || '—')}
+              </div>
+              <div>
+                ${(fd.meanings || []).slice(0, 3).map(m => `
+                  <div style="margin-top: 0.5rem;">
+                    <span class="pos-badge ${m.partOfSpeech}">${escHtml(m.partOfSpeech)}</span>
+                    <p style="font-size: 0.9rem; margin-top: 0.2rem;">${escHtml(m.definitions[0]?.definition || '')}</p>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<p style="color: var(--muted);">No entry found.</p>'}
+          </div>
+          <div class="source-card-foot">
+            <span style="font-size: 0.75rem; color: var(--muted);">api.dictionaryapi.dev</span>
+            <a class="source-ext-link" href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">Docs ↗</a>
+          </div>
+        </div>
+      `;
+
+      // 2. Wiktionary Card
+      const wikt = data.wiktionary;
+      cardsHtml += `
+        <div class="source-card">
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">📖</span>
+              <span class="source-card-title">Wiktionary REST API</span>
+            </div>
+            <span class="source-status-badge ${wikt && wikt.en ? 'live' : ''}">${wikt && wikt.en ? 'Live Data' : 'No result'}</span>
+          </div>
+          <div class="source-card-body">
+            ${wikt && wikt.en ? `
+              <div>
+                ${wikt.en.slice(0, 3).map(sec => `
+                  <div style="margin-top: 0.5rem;">
+                    <span class="pos-badge other">${escHtml(sec.partOfSpeech)}</span>
+                    <div style="font-size: 0.9rem; margin-top: 0.2rem;">${sanitizeHtml(sec.definitions[0]?.definition || '')}</div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : '<p style="color: var(--muted);">No Wiktionary entry found.</p>'}
+          </div>
+          <div class="source-card-foot">
+            <button class="ref-batch-btn" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="openInAppEmbed('https://en.m.wiktionary.org/wiki/${enc(word)}', 'Wiktionary Mobile — ${escAttr(word)}')">Preview Embed 📱</button>
+            <a class="source-ext-link" href="https://en.wiktionary.org/wiki/${enc(word)}" target="_blank" rel="noopener noreferrer">Open Wiki ↗</a>
+          </div>
+        </div>
+      `;
+
+      // 3. Datamuse Card
+      const dm = data.datamuse;
+      cardsHtml += `
+        <div class="source-card">
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">🧠</span>
+              <span class="source-card-title">Datamuse Lexical Engine</span>
+            </div>
+            <span class="source-status-badge ${dm && (dm.synonymsList.length || dm.relatedList.length) ? 'live' : ''}">Live Data</span>
+          </div>
+          <div class="source-card-body">
+            <div>
+              <span class="sub-syn-label">Synonyms (${dm.synonymsList.length}):</span>
+              <div class="chips-cloud" style="margin-top: 0.3rem;">
+                ${dm.synonymsList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
+              </div>
+            </div>
+            <div style="margin-top: 0.5rem;">
+              <span class="sub-syn-label">Related Concepts:</span>
+              <div class="chips-cloud" style="margin-top: 0.3rem;">
+                ${dm.relatedList.slice(0, 6).map(w => `<button class="clickable-word-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</button>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="source-card-foot">
+            <span style="font-size: 0.75rem; color: var(--muted);">api.datamuse.com</span>
+            <a class="source-ext-link" href="https://www.datamuse.com/api/" target="_blank" rel="noopener noreferrer">API Info ↗</a>
+          </div>
+        </div>
+      `;
+
+      // 4. Wikipedia Summary Card
+      const wp = data.wikipedia;
+      cardsHtml += `
+        <div class="source-card">
+          <div class="source-card-head">
+            <div class="source-card-identity">
+              <span class="source-card-icon">🌐</span>
+              <span class="source-card-title">Wikipedia Context</span>
+            </div>
+            <span class="source-status-badge ${wp && wp.extract ? 'live' : ''}">${wp && wp.extract ? 'Live Data' : 'No article'}</span>
+          </div>
+          <div class="source-card-body">
+            ${wp && wp.extract ? `
+              ${wp.thumbnail?.source ? `<img src="${escAttr(wp.thumbnail.source)}" alt="${escAttr(word)}" style="max-height: 120px; width: auto; border-radius: 8px; object-fit: contain; margin-bottom: 0.5rem;">` : ''}
+              <div style="font-size: 0.9rem; line-height: 1.5;">${escHtml(wp.extract)}</div>
+            ` : '<p style="color: var(--muted);">No matching Wikipedia summary.</p>'}
+          </div>
+          <div class="source-card-foot">
+            <span style="font-size: 0.75rem; color: var(--muted);">${wp?.description || 'Encyclopedic'}</span>
+            ${wp?.content_urls?.desktop?.page ? `<a class="source-ext-link" href="${escAttr(wp.content_urls.desktop.page)}" target="_blank" rel="noopener noreferrer">Full Article ↗</a>` : ''}
+          </div>
+        </div>
+      `;
+
+      grid.innerHTML = cardsHtml;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       CATALAN & BILINGUAL AGGREGATION
+    ═══════════════════════════════════════════════════ */
+    async function executeCatalanAggregation(word, seq) {
+      const [wiktRes, mmRes] = await Promise.allSettled([
+        fetch('https://ca.wiktionary.org/api/rest_v1/page/definition/' + encodeURIComponent(word)).then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=ca|en').then(r => r.ok ? r.json() : null).catch(() => null)
+      ]);
+
+      if (seq !== searchSequence) return;
+
+      const wiktData = wiktRes.value;
+      const mmData = mmRes.value;
+
+      $('heroSyllables').textContent = '';
+      $('pronunciationRow').innerHTML = `
+        <div class="accent-pill us-primary">
+          <span class="flag-label">🔵 Català</span>
+          <span class="ipa-text">/${word}/</span>
+          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(word)}', 'ca-ES')">🔊</button>
+        </div>
+      `;
+
+      // Intuitive explanation from translation
+      const translated = mmData?.responseData?.translatedText;
+      if (translated) {
+        $('intuitiveText').textContent = `Significat / Traducció a l'anglès: “${translated}”`;
+        $('intuitiveContext').textContent = 'MyMemory Translation API';
+        $('intuitiveBox').style.display = 'flex';
+      } else {
+        $('intuitiveBox').style.display = 'none';
+      }
+
+      // Render definitions
+      renderDefinitionsGroup(null, wiktData ? { en: wiktData.ca } : null, null);
+      renderReferenceGrid(word);
+    }
+
+    async function executeBilingualAggregation(word, seq) {
+      const [mmCaEn, mmEnCa] = await Promise.allSettled([
+        fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=ca|en').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(word) + '&langpair=en|ca').then(r => r.ok ? r.json() : null).catch(() => null)
+      ]);
+
+      if (seq !== searchSequence) return;
+
+      const caEn = mmCaEn.value?.responseData?.translatedText;
+      const enCa = mmEnCa.value?.responseData?.translatedText;
+
+      $('heroSyllables').textContent = '';
+      $('pronunciationRow').innerHTML = `
+        <div class="accent-pill us-primary">
+          <span class="flag-label">🔄 CA ↔ EN</span>
+          <span class="ipa-text">Bilingual Translation</span>
+          <button class="audio-play-btn" onclick="speakWebSpeech('${escAttr(word)}', 'en-US')">🔊</button>
+        </div>
+      `;
+
+      let text = '';
+      if (caEn) text += `Català → Anglès: “${caEn}”  `;
+      if (enCa && enCa.toLowerCase() !== caEn?.toLowerCase()) text += `· Anglès → Català: “${enCa}”`;
+
+      $('intuitiveText').textContent = text || 'Sense traducció directa trobada.';
+      $('intuitiveContext').textContent = 'MyMemory Translation';
+      $('intuitiveBox').style.display = 'flex';
+
+      renderReferenceGrid(word);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       VIEW 3: REFERENCE DICTIONARIES GRID
+    ═══════════════════════════════════════════════════ */
+    function renderReferenceGrid(word) {
+      const grid = $('refGrid');
+      const list = REFERENCES[currentMode] || REFERENCES.en;
+
+      grid.innerHTML = list.map(ref => `
+        <a class="ref-card-link" href="${escAttr(ref.url(word))}" target="_blank" rel="noopener noreferrer">
+          <span class="ref-card-icon">${ref.icon}</span>
+          <div class="ref-card-info">
+            <div class="ref-card-name">${escHtml(ref.name)}</div>
+            <div class="ref-card-desc">${escHtml(ref.desc || '')}</div>
+          </div>
+          <span class="ref-card-arrow">↗</span>
+        </a>
+      `).join('');
+    }
+
+    function openAllReferences() {
+      const list = REFERENCES[currentMode] || REFERENCES.en;
+      if (!currentWord) return;
+      list.forEach(ref => {
+        window.open(ref.url(currentWord), '_blank', 'noopener');
+      });
+      showToast(`Opened ${list.length} reference dictionaries in new tabs.`);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       EMBED DRAWER / IN-APP VIEWER
+    ═══════════════════════════════════════════════════ */
+    function openInAppEmbed(url, title) {
+      $('embedTitle').textContent = title || 'Dictionary Viewer';
+      $('embedDirectLink').href = url;
+      $('embedIframe').src = url;
+      $('embedModal').classList.add('open');
+    }
+
+    function closeEmbedModal(e) {
+      if (e && e.target !== $('embedModal') && e.target !== undefined) return;
+      $('embedModal').classList.remove('open');
+      $('embedIframe').src = 'about:blank';
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SAVED WORDS / BOOKMARKS
+    ═══════════════════════════════════════════════════ */
+    function updateStarButtonState() {
+      const isSaved = savedWords.some(item => item.word.toLowerCase() === currentWord.toLowerCase());
+      const starBtn = $('starWordBtn');
+      const starIcon = $('starIcon');
+      const starText = $('starText');
+
+      if (isSaved) {
+        starBtn.classList.add('starred');
+        starIcon.textContent = '★';
+        starText.textContent = 'Saved';
+      } else {
+        starBtn.classList.remove('starred');
+        starIcon.textContent = '⭐';
+        starText.textContent = 'Save';
+      }
+    }
+
+    function toggleSaveCurrentWord() {
+      if (!currentWord) return;
+      const index = savedWords.findIndex(item => item.word.toLowerCase() === currentWord.toLowerCase());
+
+      if (index >= 0) {
+        savedWords.splice(index, 1);
+        showToast(`Removed “${currentWord}” from saved vocabulary.`);
+      } else {
+        savedWords.unshift({
+          word: currentWord,
+          mode: currentMode,
+          date: new Date().toLocaleDateString()
+        });
+        showToast(`Saved “${currentWord}” to your vocabulary!`);
+      }
+
+      localStorage.setItem('vocab-saved-words', JSON.stringify(savedWords));
+      updateStarButtonState();
+      updateSavedBadge();
+      renderSavedList();
+    }
+
+    function updateSavedBadge() {
+      const badge = $('savedCountBadge');
+      if (savedWords.length > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = savedWords.length > 99 ? '99+' : savedWords.length;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function toggleSavedDrawer() {
+      const backdrop = $('drawerBackdrop');
+      backdrop.classList.toggle('open');
+      if (backdrop.classList.contains('open')) {
+        renderSavedList();
+      }
+    }
+
+    function closeDrawer(e) {
+      if (e.target === $('drawerBackdrop')) {
+        $('drawerBackdrop').classList.remove('open');
+      }
+    }
+
+    function renderSavedList() {
+      const body = $('drawerBody');
+      if (!savedWords.length) {
+        body.innerHTML = '<div class="empty-drawer-note">No saved words yet.<br>Click ⭐ Save on any word to bookmark it for later study!</div>';
+        return;
+      }
+
+      body.innerHTML = savedWords.map((item, idx) => `
+        <div class="bookmark-item" onclick="searchFromBookmark('${escAttr(item.word)}', '${escAttr(item.mode)}')">
+          <div>
+            <div class="bookmark-word">${escHtml(item.word)}</div>
+            <div style="font-size: 0.75rem; color: var(--muted);">${escHtml(item.date || '')}</div>
+          </div>
+          <button class="bookmark-remove-btn" onclick="removeSavedWord(event, ${idx})" title="Remove">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function searchFromBookmark(word, mode) {
+      $('drawerBackdrop').classList.remove('open');
+      if (mode && mode !== currentMode) {
+        applyMode(mode, true);
+      }
+      searchWord(word);
+    }
+
+    function removeSavedWord(e, idx) {
+      e.stopPropagation();
+      savedWords.splice(idx, 1);
+      localStorage.setItem('vocab-saved-words', JSON.stringify(savedWords));
+      updateStarButtonState();
+      updateSavedBadge();
+      renderSavedList();
+    }
+
+    /* ═══════════════════════════════════════════════════
+       RECENT SEARCHES
+    ═══════════════════════════════════════════════════ */
+    function addRecentSearch(word) {
+      recentSearches = recentSearches.filter(w => w.toLowerCase() !== word.toLowerCase());
+      recentSearches.unshift(word);
+      if (recentSearches.length > 8) recentSearches.pop();
+      localStorage.setItem('vocab-recents', JSON.stringify(recentSearches));
+      renderRecentSearches();
+    }
+
+    function renderRecentSearches() {
+      const bar = $('recentSearchesBar');
+      if (!recentSearches.length) {
+        bar.innerHTML = '';
+        return;
+      }
+
+      bar.innerHTML = `
+        <span class="recent-label">Recent:</span>
+        ${recentSearches.map(w => `<span class="recent-chip" onclick="searchWord('${escAttr(w)}')">${escHtml(w)}</span>`).join('')}
+      `;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SHARE & COPY
+    ═══════════════════════════════════════════════════ */
+    function copyWordDefinition() {
+      if (!currentWord) return;
+      const explain = $('intuitiveText').textContent || '';
+      const textToCopy = `${currentWord}: ${explain} (via Vocab American English Aggregator)`;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        showToast(`Copied “${currentWord}” definition to clipboard!`);
+      }).catch(() => {
+        showToast('Unable to copy to clipboard.');
+      });
+    }
+
+    function shareWordLink() {
+      const url = location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Share link copied to clipboard!');
+      }).catch(() => {
+        showToast('Link: ' + url);
+      });
+    }
+
+    function sanitizeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.innerHTML = str;
+      div.querySelectorAll('script, style, iframe, object, embed, form, input').forEach(el => el.remove());
+      div.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(a => {
+          if (a.name.startsWith('on') || a.name === 'style' || a.name === 'class') {
+            el.removeAttribute(a.name);
+          }
+        });
+        if (el.tagName === 'A') {
+          el.setAttribute('target', '_blank');
+          el.setAttribute('rel', 'noopener noreferrer');
+        }
+      });
+      return div.innerHTML;
+    }
+
+    // Launch App
     init();
   </script>
 </body>
